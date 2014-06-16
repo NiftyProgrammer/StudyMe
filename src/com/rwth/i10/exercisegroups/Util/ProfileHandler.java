@@ -69,6 +69,8 @@ public class ProfileHandler implements Listener{
 							tempData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
 							tempData.setUsername( obj.optString( ProfileData.PROFILE_USERNAME ) );
 							tempData.setEvent_id( event.optString( ProfileData.PROFILE_ID ) );
+							tempData.setEmail( event.optString( ProfileData.PROFILE_EMAIL ) );
+							tempData.setDesc( event.optString( ProfileData.PROFILE_DESC ) );
 						}
 					}
 				}
@@ -149,6 +151,10 @@ public class ProfileHandler implements Listener{
 			profileData.setSession(data.getSession());
 		if(TextUtils.isEmpty(profileData.getUsername()))
 			profileData.setUsername(data.getUsername());
+		if(TextUtils.isEmpty(profileData.getDesc()))
+			profileData.setDesc(data.getDesc());
+		if(TextUtils.isEmpty(profileData.getEmail()))
+			profileData.setEmail(data.getEmail());
 	}
 	
 	
@@ -160,6 +166,9 @@ public class ProfileHandler implements Listener{
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_USERNAME, pData.getUsername() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DISPLAY_NAME, pData.getDisplayName() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_MSG_ID, pData.getMsg_id() ) );
+		event.addEntity( new Entity<String>( ProfileData.PROFILE_EMAIL, pData.getEmail() ) );
+		event.addEntity( new Entity<String>( ProfileData.PROFILE_DESC, pData.getDesc() ) );
+		
 		event.setSession(pData.getSession());
 		String value = StaticUtilMethods.eventToString(event);
 		Log.d("Upload Profile post Value", value);
@@ -182,6 +191,9 @@ public class ProfileHandler implements Listener{
 		profileData.setSession(pref.getPreference(Constants.PROPERTY_PROFILE_SESSION, RandomString.randomString(20)));
 		profileData.setMsg_id(pref.getStringPreferences(Constants.PROPERTY_REG_ID, ""));
 		profileData.setUsername(pref.getPreference(context.getString(R.string.username_pref), ""));
+		profileData.setDisplayName(pref.getPreference(ProfileData.PROFILE_DISPLAY_NAME, ""));
+		profileData.setEmail(pref.getPreference(ProfileData.PROFILE_EMAIL, ""));
+		profileData.setDesc(pref.getPreference(ProfileData.PROFILE_DESC, ""));
 	}
 	
 	public ProfileData getProfileData(){

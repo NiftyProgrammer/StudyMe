@@ -47,5 +47,7 @@ public class ProfileData {
 	public static final String PROFILE_SESSION = "session";
 	public static final String PROFILE_DISPLAY_NAME = "display_name";
 	public static final String PROFILE_ID = "id";
+	public static final String PROFILE_EMAIL = "email";
+	public static final String PROFILE_DESC = "description";
 	
 }
