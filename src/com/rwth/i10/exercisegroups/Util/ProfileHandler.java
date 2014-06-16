@@ -67,6 +67,7 @@ public class ProfileHandler implements Listener{
 				}
 				
 				if(!TextUtils.isEmpty(tempData.getEvent_id())){
+					setProfileData(tempData);
 					deleteProfile(tempData.getEvent_id());					
 				}
 			}
@@ -79,6 +80,15 @@ public class ProfileHandler implements Listener{
 	@Override
 	public void onPOSTResult(String result) {
 		// TODO Auto-generated method stub
+		try {
+			JSONObject obj = new JSONObject(result);
+			if("1".equalsIgnoreCase(obj.optString("result"))){
+				uploadProfile(profileData);
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -100,6 +110,19 @@ public class ProfileHandler implements Listener{
 		deleteProfile(this.contextData, id);
 	}
 	
+	public void setProfileData(ProfileData data){
+		if(TextUtils.isEmpty(profileData.getDisplayName()))
+			profileData.setDisplayName(data.getDisplayName());
+		if(TextUtils.isEmpty(profileData.getEvent_id()))
+			profileData.setEvent_id(data.getEvent_id());
+		if(TextUtils.isEmpty(profileData.getMsg_id()))
+			profileData.setMsg_id(data.getMsg_id());
+		if(TextUtils.isEmpty(profileData.getSession()))
+			profileData.setSession(data.getSession());
+		if(TextUtils.isEmpty(profileData.getUsername()))
+			profileData.setUsername(data.getUsername());
+	}
+	
 	public void uploadProfile(ContextData contextData, ProfileData pData){
 		
 		Event event = new Event("UPDATE", "RELEVANCE", (int)System.currentTimeMillis());
@@ -109,8 +132,11 @@ public class ProfileHandler implements Listener{
 		event.setSession(pData.getSession());
 		contextData.post("events/show", StaticUtilMethods.eventToString(event));
 	}
+	public void uploadProfile(ProfileData pData){
+		uploadProfile(contextData, pData);
+	}
 	
-	private void getPreviousProfile(){
+	public void getPreviousProfile(){
 		contextData.get("events/show", createFetschProfileString());
 	}
 	
