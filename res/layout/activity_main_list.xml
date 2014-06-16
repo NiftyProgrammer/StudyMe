@@ -1,0 +1,50 @@
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/list_view_drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${packageName}.Activitys.${activityClass}" >
+
+    <!-- The main content view -->
+
+    <ListView
+        android:id="@+id/list_content_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:choiceMode="singleChoice"
+        android:divider="@android:color/white"
+        android:dividerHeight="0dp" />
+
+    <!-- The navigation drawer -->
+
+    <RelativeLayout
+        android:id="@+id/list_left_drawer"
+        android:layout_width="240dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#fff" >
+        
+        <Button
+            android:id="@+id/list_left_drawer_view_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Map View" />
+        
+        <Button
+            android:id="@+id/list_left_drawer_create_group_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/list_left_drawer_view_btn"
+            android:text="Create Group" />
+
+        <ListView
+            android:id="@+id/list_left_drawer_group_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/list_left_drawer_create_group_btn"
+            android:choiceMode="singleChoice"
+            android:divider="@android:color/white"
+            android:dividerHeight="0dp" />
+    </RelativeLayout>
+
+</android.support.v4.widget.DrawerLayout>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Me Study</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="username_pref">com.rwth.i10.exercisegroups.username</string>
+    <string name="password_pref">com.rwth.i10.exercisegroups.password</string>
+    <string name="title_activity_register">RegisterActivity</string>
+	<string name="user_seed">ExErCiseGroUpMeStuDyUsErCreddeNtiaLsUsErNameAnDPasswWorDSEEEd</string>
+    
+    <!-- gcm strings -->
+
+    <string name="gcm_server_base_url">https://android.googleapis.com/gcm/send</string>
+    <string name="gcm_server_api_key">AIzaSyAALG1bJYhdQkJgomnMc_uhwFbeSnPcbns</string>
+    <string name="gcm_project_code_number">34530780872</string>
+
+    <!-- Server credentials -->
+    <string name="server_username">exercisegroupadmin</string>
+    <string name="server_password">sTuDYmeADmiNuSer</string>
+
+    <!-- create group activity -->
+
+    <string name="title_activity_create_group">New Group</string>
+    <string name="create_group_activity_str">Activity Name</string>
+    <string name="create_group_course_str">Course Title</string>
+    <string name="create_group_btn_str">Create Group</string>
+    <string name="title_activity_main_list">Me Study</string>
+    <string name="title_activity_profile">Profile</string>
+
+</resources>

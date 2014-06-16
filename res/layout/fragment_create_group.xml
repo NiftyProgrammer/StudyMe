@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_vertical_margin"
+    android:paddingTop="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_horizontal_margin" >
+
+    <EditText
+        android:id="@+id/create_group_activity_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:hint="@string/create_group_activity_str"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:inputType="textPersonName" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/create_group_course_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/create_group_course_str"
+        android:layout_alignLeft="@+id/create_group_activity_text"
+        android:layout_below="@+id/create_group_activity_text"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin" />
+
+    <ImageView
+        android:id="@+id/create_group_img"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/create_group_course_text"
+        android:src="@drawable/group_img" />
+
+    <Button
+        android:id="@+id/create_group_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/create_group_course_text"
+        android:text="@string/create_group_btn_str" />
+
+</RelativeLayout>
