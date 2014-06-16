@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class ProfileActivity extends Activity implements OnClickListener{
@@ -26,6 +27,8 @@ public class ProfileActivity extends Activity implements OnClickListener{
 	private ProfileData _newData;
 	
 	private TextView _displayName, _email, _description;
+	private View _progressLayout;
+	private ScrollView _mainView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +48,8 @@ public class ProfileActivity extends Activity implements OnClickListener{
 			@Override
 			protected void onPreExecute() {
 				pref = new ManagePreferences(_context);
+				_progressLayout.setVisibility(View.VISIBLE);
+				_mainView.setEnabled(false);
 			}			
 			@Override
 			protected Void doInBackground(Void... params) {
@@ -95,6 +100,8 @@ public class ProfileActivity extends Activity implements OnClickListener{
 		_displayName = (TextView)findViewById(R.id.profile_display_name);
 		_description = (TextView)findViewById(R.id.profile_desc);
 		_email = (TextView)findViewById(R.id.profile_email_address);
+		_mainView = (ScrollView)findViewById(R.id.profile_main_view);
+		_progressLayout = findViewById(R.id.profile_progress_layout);
 		
 		if(!TextUtils.isEmpty(_newData.getDisplayName()))
 			_displayName.setText(_newData.getDisplayName());

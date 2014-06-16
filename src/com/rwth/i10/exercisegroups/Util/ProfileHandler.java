@@ -23,13 +23,15 @@ public class ProfileHandler implements Listener{
 	private Context context;
 	
 	private ProfileData profileData;
+	
 	private boolean deleteAfterwords;
+	private boolean uploadProfile;
 	
 	public ProfileHandler(Context context) {
 		// TODO Auto-generated constructor stub
 		this.context = context;
 		fetschProfileData();
-		deleteAfterwords = false;
+		deleteAfterwords = uploadProfile = false;
 	}
 	public ProfileHandler(Context context, ContextData contextData){
 		this(context);
@@ -95,7 +97,8 @@ public class ProfileHandler implements Listener{
 		Log.d("Post Result", result);
 		try {
 			JSONObject obj = new JSONObject(result);
-			if("1".equalsIgnoreCase(obj.optString("result"))){
+			if("1".equalsIgnoreCase(obj.optString("result")) && uploadProfile){
+				uploadProfile = false;
 				uploadProfile(profileData);
 			}
 		} catch (JSONException e) {
@@ -112,6 +115,7 @@ public class ProfileHandler implements Listener{
 	}
 		
 	public void deleteProfile(ContextData contextData, String id){
+		uploadProfile = true;
 		try {
 			String value = new JSONObject().put("id", id).toString();
 			//Log.d("Delete profile post value", value);
@@ -165,9 +169,9 @@ public class ProfileHandler implements Listener{
 		event.addEntity(new Entity<String>("activity", "profile_data"));
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_USERNAME, pData.getUsername() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DISPLAY_NAME, pData.getDisplayName() ) );
-		event.addEntity( new Entity<String>( ProfileData.PROFILE_MSG_ID, pData.getMsg_id() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_EMAIL, pData.getEmail() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DESC, pData.getDesc() ) );
+		event.addEntity( new Entity<String>( ProfileData.PROFILE_MSG_ID, pData.getMsg_id() ) );
 		
 		event.setSession(pData.getSession());
 		String value = StaticUtilMethods.eventToString(event);
