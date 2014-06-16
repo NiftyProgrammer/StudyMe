@@ -22,11 +22,13 @@ public class ProfileHandler implements Listener{
 	private Context context;
 	
 	private ProfileData profileData;
+	private boolean deleteAfterwords;
 	
 	public ProfileHandler(Context context) {
 		// TODO Auto-generated constructor stub
 		this.context = context;
-		getProfileData();
+		fetschProfileData();
+		deleteAfterwords = false;
 	}
 	public ProfileHandler(Context context, ContextData contextData){
 		this(context);
@@ -47,6 +49,9 @@ public class ProfileHandler implements Listener{
 		try {
 			JSONObject data = new JSONObject(result);
 			
+			if(data.optInt("result") == 0 || data.optInt("total_events") <= 0){
+				uploadProfile(profileData);
+			}
 			ProfileData tempData = new ProfileData();
 			JSONArray events = data.optJSONArray("events");
 			if(events != null){
@@ -68,7 +73,10 @@ public class ProfileHandler implements Listener{
 				
 				if(!TextUtils.isEmpty(tempData.getEvent_id())){
 					setProfileData(tempData);
-					deleteProfile(tempData.getEvent_id());					
+					if(deleteAfterwords){
+						deleteAfterwords = false;
+						deleteProfile(tempData.getEvent_id());
+					}
 				}
 			}
 			
@@ -103,11 +111,26 @@ public class ProfileHandler implements Listener{
 			contextData.post("events/delete", new JSONObject().put("id", id).toString());
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
+	
 			e.printStackTrace();
 		}
 	}
 	public void deleteProfile(String id){
 		deleteProfile(this.contextData, id);
+	}
+	public void updateProfile(){
+		deleteAfterwords = true;
+		getPreviousProfile();
+	}
+	public void updateProfile(ContextData contextData){
+		this.contextData = contextData;
+		this.contextData.registerGETListener(this);
+		this.contextData.registerPOSTListener(this);
+		updateProfile();
+	}
+	public void deleteProfile(String mUsername, String mPassword){
+		setContexData(mUsername, mPassword);
+		updateProfile();
 	}
 	
 	public void setProfileData(ProfileData data){
@@ -122,6 +145,7 @@ public class ProfileHandler implements Listener{
 		if(TextUtils.isEmpty(profileData.getUsername()))
 			profileData.setUsername(data.getUsername());
 	}
+	
 	
 	public void uploadProfile(ContextData contextData, ProfileData pData){
 		
@@ -140,13 +164,21 @@ public class ProfileHandler implements Listener{
 		contextData.get("events/show", createFetschProfileString());
 	}
 	
-	private void getProfileData(){
+	public void fetschProfileData(){
 		ManagePreferences pref = new ManagePreferences(context);
 		profileData = new ProfileData();
 		
 		profileData.setSession(pref.getPreference(Constants.PROPERTY_PROFILE_SESSION, RandomString.randomString(20)));
 		profileData.setMsg_id(pref.getStringPreferences(Constants.PROPERTY_REG_ID, ""));
 		profileData.setUsername(pref.getPreference(context.getString(R.string.username_pref), ""));
+	}
+	
+	public ProfileData getProfileData(){
+		return this.profileData;
+	}
+	public ProfileData setMessageId(String msg_id){
+		this.profileData.setMsg_id(msg_id);
+		return this.profileData;
 	}
 	
 	private String createFetschProfileString(){

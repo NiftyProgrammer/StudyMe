@@ -69,6 +69,7 @@ import com.rwth.i10.exercisegroups.Util.Constants;
 import com.rwth.i10.exercisegroups.Util.GroupData;
 import com.rwth.i10.exercisegroups.Util.MessageCategories;
 import com.rwth.i10.exercisegroups.Util.MessagesTypes;
+import com.rwth.i10.exercisegroups.Util.ProfileHandler;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.Util.StaticUtilMethods;
 import com.rwth.i10.exercisegroups.database.GroupsDataSource;
@@ -91,6 +92,7 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 	public static ContextData serverHandler = null;
 	public static ContextData userHandler = null;
 	public static Location mLocation;
+	public static ProfileHandler mProfileHandler;
 	
 
 	private static Activity context;
@@ -266,6 +268,9 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 		userHandler.registerGETListener(this);
 		userHandler.registerPOSTListener(this);
 		
+		mProfileHandler = new ProfileHandler(context, mUsername, mPassword);
+		mProfileHandler.getPreviousProfile();
+		
 		String []credentials = StaticUtilMethods.getUserCredentials(context);
 		mUsername = credentials[0];
 		mPassword = credentials[1];
@@ -276,9 +281,9 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 			gcm = GoogleCloudMessaging.getInstance(context);
 			regId = getRegistrationId(context);
 			Log.d("RegId", "prev Id: " + regId);
-			//if (TextUtils.isEmpty(regId)) {
+			if (TextUtils.isEmpty(regId)) {
 				registerInBackground();
-			//}
+			}
 		}
 		
 		getDatabaseGroups();
@@ -327,15 +332,8 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 					regId = gcm.register(getString(R.string.gcm_project_code_number));
 					storeRegistrationId(context, regId);
 					
-					String session = StaticUtilMethods.getProfileSessionId(context);
-					Event profile = new Event("UPDATE", "RELEVANCE", (int)System.currentTimeMillis());
-					profile.setSession(session);
-					profile.addEntity(new Entity<String>("app", "study_me"));
-					profile.addEntity(new Entity<String>("user_name", mUsername));
-					profile.addEntity(new Entity<String>("msg_id", regId));
-					
-					serverHandler.post("events/update", StaticUtilMethods.eventToString(profile));
-					StaticUtilMethods.storeProfileSessionId(session, context);					
+					mProfileHandler.setMessageId(regId);
+					mProfileHandler.updateProfile();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

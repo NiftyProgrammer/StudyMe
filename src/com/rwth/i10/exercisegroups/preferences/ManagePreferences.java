@@ -12,6 +12,8 @@ import com.rwth.i10.exercisegroups.R;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
+import android.util.Log;
 
 public class ManagePreferences {
 
@@ -35,14 +37,13 @@ public class ManagePreferences {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 		SimpleCrypto crypto = new SimpleCrypto();
 		String value = pref.getString(key, defaultValue);
-		if(value.equalsIgnoreCase(defaultValue))
+		Log.d("Orig Value", value);
+		if(TextUtils.isEmpty(value) || value.equalsIgnoreCase(defaultValue))
 			return defaultValue;
 		else
 			return crypto.decrypt(context.getString(R.string.user_seed), value);
 	}
-	
-	
-	
+		
 	public boolean putStringPreferences(String key, String value){
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();		
 		editor.putString(key, value);		
