@@ -15,6 +15,7 @@ import de.contextdata.Event;
 import de.contextdata.RandomString;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 public class ProfileHandler implements Listener{
 
@@ -46,6 +47,7 @@ public class ProfileHandler implements Listener{
 	@Override
 	public void onGETResult(String result) {
 		// TODO Auto-generated method stub
+		//Log.d("Get Result", result);
 		try {
 			JSONObject data = new JSONObject(result);
 			
@@ -88,6 +90,7 @@ public class ProfileHandler implements Listener{
 	@Override
 	public void onPOSTResult(String result) {
 		// TODO Auto-generated method stub
+		Log.d("Post Result", result);
 		try {
 			JSONObject obj = new JSONObject(result);
 			if("1".equalsIgnoreCase(obj.optString("result"))){
@@ -108,7 +111,9 @@ public class ProfileHandler implements Listener{
 		
 	public void deleteProfile(ContextData contextData, String id){
 		try {
-			contextData.post("events/delete", new JSONObject().put("id", id).toString());
+			String value = new JSONObject().put("id", id).toString();
+			//Log.d("Delete profile post value", value);
+			contextData.post("events/delete", value);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 	
@@ -150,18 +155,24 @@ public class ProfileHandler implements Listener{
 	public void uploadProfile(ContextData contextData, ProfileData pData){
 		
 		Event event = new Event("UPDATE", "RELEVANCE", (int)System.currentTimeMillis());
+		event.addEntity(new Entity<String>("app", "study_me"));
+		event.addEntity(new Entity<String>("activity", "profile_data"));
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_USERNAME, pData.getUsername() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DISPLAY_NAME, pData.getDisplayName() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_MSG_ID, pData.getMsg_id() ) );
 		event.setSession(pData.getSession());
-		contextData.post("events/show", StaticUtilMethods.eventToString(event));
+		String value = StaticUtilMethods.eventToString(event);
+		Log.d("Upload Profile post Value", value);
+		contextData.post("events/update", value);
 	}
 	public void uploadProfile(ProfileData pData){
 		uploadProfile(contextData, pData);
 	}
 	
 	public void getPreviousProfile(){
-		contextData.get("events/show", createFetschProfileString());
+		String value = createFetschProfileString();
+		//Log.d("Get Previous Value", value);
+		contextData.get("events/show", value);
 	}
 	
 	public void fetschProfileData(){
@@ -184,7 +195,7 @@ public class ProfileHandler implements Listener{
 	private String createFetschProfileString(){
 		JSONObject event = new JSONObject();
 		try {
-			event.put("model", "LATEST");
+			event.put("model", "COMPLETE");
 			event.put("category", "ACTIVITY");
 			event.put("source", "MOBILE");
 			event.put("type", "RELEVANCE");
@@ -195,7 +206,7 @@ public class ProfileHandler implements Listener{
 			entity1.put("value", "study_me");
 			
 			entity2.put("key", "activity");
-			entity2.put("value", "user_profile");
+			entity2.put("value", "profile_data");
 			
 			JSONArray array = new JSONArray();
 			array.put(entity1);

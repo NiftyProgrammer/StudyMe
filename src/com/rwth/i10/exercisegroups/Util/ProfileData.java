@@ -3,7 +3,7 @@ package com.rwth.i10.exercisegroups.Util;
 public class ProfileData {
 
 	
-	private String username, displayName, msg_id, session, event_id;
+	private String username, displayName, msg_id, session, event_id, email, desc;
 	
 	public ProfileData() {
 		// TODO Auto-generated constructor stub
@@ -19,6 +19,10 @@ public class ProfileData {
 		this.session = session;
 	}public void setEvent_id(String event_id) {
 		this.event_id = event_id;
+	}public void setEmail(String email) {
+		this.email = email;
+	}public void setDesc(String desc) {
+		this.desc = desc;
 	}
 	
 	public String getUsername() {
@@ -31,6 +35,10 @@ public class ProfileData {
 		return session;
 	}public String getEvent_id() {
 		return event_id;
+	}public String getEmail() {
+		return email;
+	}public String getDesc() {
+		return desc;
 	}
 	
 	

@@ -90,7 +90,7 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 	public static GroupsDataSource databaseSourse;
 	public static boolean closeApplication;
 	public static ContextData serverHandler = null;
-	public static ContextData userHandler = null;
+	/*public static ContextData userHandler = null;*/
 	public static Location mLocation;
 	public static ProfileHandler mProfileHandler;
 	
@@ -264,17 +264,17 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 		serverHandler.registerGETListener(this);
 		serverHandler.registerPOSTListener(this);
 
-		userHandler = ServerHandler.createInstance(mUsername, mPassword);
+		/*userHandler = ServerHandler.createInstance(mUsername, mPassword);
 		userHandler.registerGETListener(this);
-		userHandler.registerPOSTListener(this);
+		userHandler.registerPOSTListener(this);*/
+				
+		String []credentials = StaticUtilMethods.getUserCredentials(context);
+		mUsername = credentials[0];
+		mPassword = credentials[1];
 		
 		mProfileHandler = new ProfileHandler(context, mUsername, mPassword);
 		mProfileHandler.getPreviousProfile();
 		
-		String []credentials = StaticUtilMethods.getUserCredentials(context);
-		mUsername = credentials[0];
-		mPassword = credentials[1];
-
 		groupListView = new MainListViewAdapter(context);
 
 		if(checkPlayServices()){
@@ -443,7 +443,17 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 				@Override
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
+					mDrawerLayout.closeDrawer(LeftDrawer);
 					startActivity(new Intent(context, MainListActivity.class));										
+				}
+			});
+			((Button)rootView.findViewById(R.id.left_drawer_profile_btn)).setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					mDrawerLayout.closeDrawer(LeftDrawer);
+					startActivity(new Intent(context, ProfileActivity.class));
 				}
 			});
 			
@@ -499,16 +509,7 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 				ArrayList<String> endedGroups = new ArrayList<String>();
 				for(int i=0; i< events.length(); i++){
 					JSONObject eve = events.optJSONObject(i);
-					String groupId = "";
-					JSONArray entities = eve.optJSONArray("entities");
-					if(entities != null)
-						for(int j=0; j<entities.length(); j++){
-							JSONObject temp = entities.optJSONObject(j);
-							if(temp != null)
-								if("key".equalsIgnoreCase(temp.optString("group_id"))){
-									groupId = temp.optString("value");
-								}
-						}
+					String groupId = eve.optString("session");
 					
 					if(eve.optString("action").equalsIgnoreCase("START"))
 						groups.put(groupId, eve);

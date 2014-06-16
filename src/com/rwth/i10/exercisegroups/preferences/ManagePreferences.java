@@ -28,7 +28,7 @@ public class ManagePreferences {
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 		SimpleCrypto crypto = new SimpleCrypto();
 		
-		editor.putString(key, crypto.encrypt(context.getString(R.string.user_seed), value));
+		editor.putString(key, crypto.toHex(value));
 		
 		return editor.commit();
 	}
@@ -37,11 +37,10 @@ public class ManagePreferences {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 		SimpleCrypto crypto = new SimpleCrypto();
 		String value = pref.getString(key, defaultValue);
-		Log.d("Orig Value", value);
 		if(TextUtils.isEmpty(value) || value.equalsIgnoreCase(defaultValue))
 			return defaultValue;
 		else
-			return crypto.decrypt(context.getString(R.string.user_seed), value);
+			return crypto.fromHex(value);
 	}
 		
 	public boolean putStringPreferences(String key, String value){
