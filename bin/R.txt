@@ -349,11 +349,11 @@ int id action_bar_root 0x7f07002c
 int id action_bar_subtitle 0x7f070035
 int id action_bar_title 0x7f070034
 int id action_context_bar 0x7f07002f
-int id action_forgot_password 0x7f070081
+int id action_forgot_password 0x7f070082
 int id action_menu_divider 0x7f070028
 int id action_menu_presenter 0x7f070029
 int id action_mode_close_button 0x7f070036
-int id action_settings 0x7f070082
+int id action_settings 0x7f070083
 int id activity_chooser_view_content 0x7f070037
 int id adapter_group_list_del_btn 0x7f070070
 int id adapter_group_list_img 0x7f07006d
@@ -394,8 +394,9 @@ int id ifRoom 0x7f07001d
 int id image 0x7f070039
 int id left_drawer 0x7f07007c
 int id left_drawer_create_group_btn 0x7f07007e
-int id left_drawer_group_list 0x7f070080
+int id left_drawer_group_list 0x7f070081
 int id left_drawer_profile_btn 0x7f07007f
+int id left_drawer_profile_change_status 0x7f070080
 int id left_drawer_view_btn 0x7f07007d
 int id listMode 0x7f070014
 int id list_content_view 0x7f070058

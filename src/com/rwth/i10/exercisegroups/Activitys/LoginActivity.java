@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.rwth.i10.exercisegroups.R;
 import com.rwth.i10.exercisegroups.Util.MyContextData;
+import com.rwth.i10.exercisegroups.Util.ProfileData;
 import com.rwth.i10.exercisegroups.Util.ProfileHandler;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
@@ -335,7 +336,8 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 	private void saveCredentials(){
 		ManagePreferences managePreferences = new ManagePreferences(this);
 		managePreferences.savePreferences(getString(R.string.username_pref), mUsername);
-		managePreferences.savePreferences(getString(R.string.password_pref), mPassword);		
+		managePreferences.savePreferences(getString(R.string.password_pref), mPassword);
+		managePreferences.putBoolPreferences(ProfileData.PROFILE_PUBLIC, false);
 	}
 	
 	/**

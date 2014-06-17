@@ -54,6 +54,11 @@ public class ManagePreferences {
 		editor.putInt(key, value);		
 		return editor.commit();
 	}
+	public boolean putBoolPreferences(String key, boolean value){
+		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();		
+		editor.putBoolean(key, value);		
+		return editor.commit();
+	}
 	
 	public String getStringPreferences(String key, String defaultValue){
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
@@ -62,6 +67,10 @@ public class ManagePreferences {
 	public int getIntPreferences(String key, int defaultValue){
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 		return pref.getInt(key, defaultValue);
+	}
+	public boolean getBoolPreferences(String key, boolean defaultValue){
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+		return pref.getBoolean(key, defaultValue);
 	}
 		
 		

@@ -73,6 +73,7 @@ public class ProfileHandler implements MyContextData.Listener{
 					JSONArray entities = event.optJSONArray("entities");
 					String app = "", activity = "", disName = "", msgId = "", uname = "";
 					String email = "", description = "";
+					boolean publicProfile = false;
 					for(int j=0; j<entities.length(); j++){
 						JSONObject obj = entities.optJSONObject(j);
 						if("app".equalsIgnoreCase(obj.optString( "key" )))
@@ -89,9 +90,11 @@ public class ProfileHandler implements MyContextData.Listener{
 							email = obj.optString("value");
 						if(ProfileData.PROFILE_DESC.equalsIgnoreCase(obj.optString( "key" )))
 							description = obj.optString("value");
+						if(ProfileData.PROFILE_PUBLIC.equalsIgnoreCase(obj.optString( "key" )))
+							publicProfile = obj.getBoolean("value");						
 					}
 					if( "study_me".equalsIgnoreCase(app) &&
-							"profile_data".equalsIgnoreCase(activity) ){
+							"profile_data".equalsIgnoreCase(activity) && profileData.getUsername().equalsIgnoreCase(uname) ){
 						tempData.setDisplayName( disName );
 						tempData.setMsg_id( msgId );
 						profileData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
@@ -99,16 +102,17 @@ public class ProfileHandler implements MyContextData.Listener{
 						profileData.setEvent_id( event.optInt( ProfileData.PROFILE_ID ) );
 						tempData.setEmail( email );
 						tempData.setDesc( description );
+						tempData.setPublicProfile( publicProfile );
 						
 						setProfileData(tempData);
 					}
 				}
 				
 				if(profileData.getEvent_id() > 0){
-					if(deleteAfterwords){
+					/*if(deleteAfterwords){
 						deleteAfterwords = false;
 						deleteProfile(profileData.getEvent_id());
-					}
+					}*/
 					updatedId = false;
 					//setProfileData(tempData);
 				}
@@ -151,6 +155,12 @@ public class ProfileHandler implements MyContextData.Listener{
 	}
 	public void setUpdatedId(){
 		updatedId = false;
+	}
+	public void setDeleteProfile(){
+		deleteAfterwords = true;
+	}
+	public boolean getUploadedId(){
+		return this.updatedId;
 	}
 	
 	public void setContexData(String username, String password){
@@ -211,22 +221,27 @@ public class ProfileHandler implements MyContextData.Listener{
 			profileData.setDesc(data.getDesc());
 		if(TextUtils.isEmpty(profileData.getEmail()))
 			profileData.setEmail(data.getEmail());
+		profileData.setPublicProfile(data.isPublicProfile());
 	}
 	
 	public void setProfileDataId(int id){
 		profileData.setEvent_id(id);
 	}
 	
+	public void uploadProfile(MyContextData contextData){
+		uploadProfile(contextData, profileData);
+	}
 	
 	public void uploadProfile(MyContextData contextData, ProfileData pData){
 		
 		Event event = new Event("UPDATE", "RELEVANCE", (int)System.currentTimeMillis());
-		event.addEntity(new Entity<String>("app", "study_me"));
-		event.addEntity(new Entity<String>("activity", "profile_data"));
+		event.addEntity( new Entity<String>("app", "study_me") );
+		event.addEntity( new Entity<String>("activity", "profile_data") );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_USERNAME, pData.getUsername() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DISPLAY_NAME, pData.getDisplayName() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_EMAIL, pData.getEmail() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DESC, pData.getDesc() ) );
+		event.addEntity( new Entity<Boolean>( ProfileData.PROFILE_PUBLIC, pData.isPublicProfile() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_MSG_ID, pData.getMsg_id() ) );
 		
 		event.setSession(pData.getSession());
@@ -254,6 +269,7 @@ public class ProfileHandler implements MyContextData.Listener{
 		profileData.setDisplayName(pref.getPreference(ProfileData.PROFILE_DISPLAY_NAME, ""));
 		profileData.setEmail(pref.getPreference(ProfileData.PROFILE_EMAIL, ""));
 		profileData.setDesc(pref.getPreference(ProfileData.PROFILE_DESC, ""));
+		profileData.setPublicProfile( pref.getBoolPreferences( ProfileData.PROFILE_PUBLIC, false ) );
 	}
 	
 	public ProfileData getProfileData(){
@@ -292,7 +308,7 @@ public class ProfileHandler implements MyContextData.Listener{
 		}
 		return event.toString();
 	}
-	
+		
 	public void profileDataFromString(String data){
 		String []datas = data.split(SAPERATOR);
 		int index = 0;

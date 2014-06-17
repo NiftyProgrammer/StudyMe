@@ -5,6 +5,7 @@ public class ProfileData {
 	
 	private String username, displayName, msg_id, session, email, desc;
 	private int event_id;
+	private boolean publicProfile;
 	
 	public ProfileData() {
 		// TODO Auto-generated constructor stub
@@ -24,6 +25,8 @@ public class ProfileData {
 		this.email = email;
 	}public void setDesc(String desc) {
 		this.desc = desc;
+	}public void setPublicProfile(boolean publicProfile) {
+		this.publicProfile = publicProfile;
 	}
 	
 	public String getUsername() {
@@ -40,6 +43,8 @@ public class ProfileData {
 		return email;
 	}public String getDesc() {
 		return desc;
+	}public boolean isPublicProfile() {
+		return publicProfile;
 	}
 	
 	
@@ -50,5 +55,5 @@ public class ProfileData {
 	public static final String PROFILE_ID = "id";
 	public static final String PROFILE_EMAIL = "email";
 	public static final String PROFILE_DESC = "description";
-	
+	public static final String PROFILE_PUBLIC = "public_profile";
 }

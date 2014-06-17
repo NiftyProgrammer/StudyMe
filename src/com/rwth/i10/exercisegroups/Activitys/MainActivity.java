@@ -476,6 +476,31 @@ LocationListener{
 
 	}
 
+	public static void hideUserProfile(){
+		new AsyncTask<Void, Void, Integer>(){
+			private ProfileHandler mServerProfile;
+			protected void onPreExecute() {
+				mServerProfile = new ProfileHandler(context, context.getString(R.string.server_username),
+						context.getString(R.string.server_password));
+				mServerProfile.getPreviousProfile();
+			}
+
+			@Override
+			protected Integer doInBackground(Void... arg0) {
+				// TODO Auto-generated method stub
+				while(mServerProfile.getUploadedId()){
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {}
+				}
+				return mServerProfile.getProfileData().getEvent_id();
+			}
+			protected void onPostExecute(Integer result) {
+				if(result > 0)
+					mServerProfile.deleteProfile(result);
+			}
+		}.execute();
+	}
 
 	/**
 	 * A placeholder fragment containing a simple view.
@@ -530,6 +555,20 @@ LocationListener{
 					// TODO Auto-generated method stub
 					mDrawerLayout.closeDrawer(LeftDrawer);
 					startActivity(new Intent(context, ProfileActivity.class));
+				}
+			});
+			((Button)rootView.findViewById(R.id.left_drawer_profile_change_status)).setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View arg0) {
+					// TODO Auto-generated method stub
+					if(mProfileHandler.getProfileData().isPublicProfile()){
+						
+					}
+					else{
+						mProfileHandler.uploadProfile(serverHandler);
+						((Button)arg0).
+					}					
 				}
 			});
 

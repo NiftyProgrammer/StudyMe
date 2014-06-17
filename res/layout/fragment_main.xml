@@ -41,6 +41,15 @@
             android:layout_below="@+id/left_drawer_create_group_btn"
             android:text="Edit Profile" />
 
+        <Button
+            android:id="@+id/left_drawer_profile_change_status"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/left_drawer_profile_btn"
+            android:layout_alignParentRight="true"
+            android:drawableStart="#FE4848" />
+
         <ListView
             android:id="@+id/left_drawer_group_list"
             android:layout_width="wrap_content"
