@@ -62,18 +62,29 @@ public class ProfileHandler implements Listener{
 				for(int i=0; i<events.length(); i++){
 					JSONObject event = events.optJSONObject(i);
 					JSONArray entities = event.optJSONArray("entities");
+					String app = "", activity = "", disName = "", msgId = "", uname = "";
 					for(int j=0; j<entities.length(); j++){
 						JSONObject obj = entities.optJSONObject(j);
-						if(profileData.getUsername().equals( obj.optString( ProfileData.PROFILE_USERNAME ) ) ||
-								profileData.getMsg_id().equals( obj.optString( ProfileData.PROFILE_MSG_ID ) )){
-							tempData.setDisplayName( obj.optString( ProfileData.PROFILE_DISPLAY_NAME ) );
-							tempData.setMsg_id( obj.optString( ProfileData.PROFILE_MSG_ID ) );
-							tempData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
-							tempData.setUsername( obj.optString( ProfileData.PROFILE_USERNAME ) );
-							tempData.setEvent_id( event.optString( ProfileData.PROFILE_ID ) );
-							tempData.setEmail( event.optString( ProfileData.PROFILE_EMAIL ) );
-							tempData.setDesc( event.optString( ProfileData.PROFILE_DESC ) );
-						}
+						if("key".equalsIgnoreCase(obj.optString("app")))
+							app = obj.optString("value");
+						if("key".equalsIgnoreCase(obj.optString("activity")))
+							activity = obj.optString("value");
+						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_USERNAME )))
+							uname = obj.optString("value");
+						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_MSG_ID )))
+							msgId = obj.optString("value");
+						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_DISPLAY_NAME )))
+							disName = obj.optString("value");
+					}
+					if( "study_me".equalsIgnoreCase(app) &&
+							"profile_data".equalsIgnoreCase(activity) ){
+						tempData.setDisplayName( disName );
+						tempData.setMsg_id( msgId );
+						tempData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
+						tempData.setUsername( uname );
+						tempData.setEvent_id( event.optString( ProfileData.PROFILE_ID ) );
+						tempData.setEmail( event.optString( ProfileData.PROFILE_EMAIL ) );
+						tempData.setDesc( event.optString( ProfileData.PROFILE_DESC ) );
 					}
 				}
 				

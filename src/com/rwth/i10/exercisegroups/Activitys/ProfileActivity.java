@@ -49,7 +49,7 @@ public class ProfileActivity extends Activity implements OnClickListener{
 			protected void onPreExecute() {
 				pref = new ManagePreferences(_context);
 				_progressLayout.setVisibility(View.VISIBLE);
-				_mainView.setEnabled(false);
+				_mainView.setVisibility(View.GONE);
 			}			
 			@Override
 			protected Void doInBackground(Void... params) {
