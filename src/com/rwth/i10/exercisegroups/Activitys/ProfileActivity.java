@@ -3,6 +3,7 @@ package com.rwth.i10.exercisegroups.Activitys;
 import com.rwth.i10.exercisegroups.R;
 import com.rwth.i10.exercisegroups.R.layout;
 import com.rwth.i10.exercisegroups.Util.ProfileData;
+import com.rwth.i10.exercisegroups.Util.ProfileHandler;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.Util.StaticUtilMethods;
 import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
@@ -20,11 +21,13 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ProfileActivity extends Activity implements OnClickListener{
 
 	private Context _context = null;
 	private ProfileData _newData;
+	private ProfileHandler _mProfileHandler;
 	
 	private TextView _displayName, _email, _description;
 	private View _progressLayout;
@@ -42,7 +45,7 @@ public class ProfileActivity extends Activity implements OnClickListener{
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		new AsyncTask<Void, String, Void>(){
+		new AsyncTask<Void, String, Boolean>(){
 			private ManagePreferences pref;
 			
 			@Override
@@ -52,7 +55,7 @@ public class ProfileActivity extends Activity implements OnClickListener{
 				_mainView.setVisibility(View.GONE);
 			}			
 			@Override
-			protected Void doInBackground(Void... params) {
+			protected Boolean doInBackground(Void... params) {
 				// TODO Auto-generated method stub
 				boolean sendData = false;
 				if( !TextUtils.isEmpty( _displayName.getText() ) && !_displayName.getText().toString().equalsIgnoreCase(_newData.getDisplayName()) ){
@@ -72,10 +75,22 @@ public class ProfileActivity extends Activity implements OnClickListener{
 				}
 				
 				if(sendData){
-					MainActivity.mProfileHandler.setProfileData(_newData);
-					MainActivity.mProfileHandler.uploadProfile(_newData);
-				}
-				return null;
+					_mProfileHandler.setProfileData(_newData);
+					_mProfileHandler.updateProfile();
+					
+					while(!_mProfileHandler.getProcessFinished()){
+						try {
+							Thread.sleep(2000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					if(!TextUtils.isEmpty(_mProfileHandler.getError()))
+						return true;
+				}				
+				
+				return false;
 			}
 			@Override
 			protected void onProgressUpdate(String... values) {
@@ -84,8 +99,15 @@ public class ProfileActivity extends Activity implements OnClickListener{
 				pref.savePreferences(values[0], values[1]);
 			}
 			@Override
-			protected void onPostExecute(Void result) {
-				finish();
+			protected void onPostExecute(Boolean result) {
+				if(result)
+					finish();
+				else{
+					Toast.makeText(_context, "Error while sending: " + MainActivity.mProfileHandler.getError(), 0).show();
+					_progressLayout.setVisibility(View.GONE);
+					_mainView.setVisibility(View.VISIBLE);
+				}
+				MainActivity.mProfileHandler.changeProcessFinished();
 			}
 			
 		}.execute();
@@ -102,6 +124,11 @@ public class ProfileActivity extends Activity implements OnClickListener{
 		_email = (TextView)findViewById(R.id.profile_email_address);
 		_mainView = (ScrollView)findViewById(R.id.profile_main_view);
 		_progressLayout = findViewById(R.id.profile_progress_layout);
+		
+		String []credentials = StaticUtilMethods.getUserCredentials(_context);
+		_mProfileHandler = new ProfileHandler(_context, credentials[0], credentials[1]);
+		_mProfileHandler.setProfileData(_newData);
+		_mProfileHandler.setUpdatedId();
 		
 		if(!TextUtils.isEmpty(_newData.getDisplayName()))
 			_displayName.setText(_newData.getDisplayName());

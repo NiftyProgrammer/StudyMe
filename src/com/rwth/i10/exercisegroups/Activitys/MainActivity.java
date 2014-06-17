@@ -69,6 +69,7 @@ import com.rwth.i10.exercisegroups.Util.Constants;
 import com.rwth.i10.exercisegroups.Util.GroupData;
 import com.rwth.i10.exercisegroups.Util.MessageCategories;
 import com.rwth.i10.exercisegroups.Util.MessagesTypes;
+import com.rwth.i10.exercisegroups.Util.MyContextData;
 import com.rwth.i10.exercisegroups.Util.ProfileHandler;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.Util.StaticUtilMethods;
@@ -82,14 +83,14 @@ import de.contextdata.Entity;
 import de.contextdata.Event;
 import de.contextdata.RandomString;
 
-public class MainActivity extends ActionBarActivity implements ContextData.Listener,
+public class MainActivity extends ActionBarActivity implements MyContextData.Listener,
 																LocationListener{
 
 
 	public static FragmentManager mFragmentManager;
 	public static GroupsDataSource databaseSourse;
 	public static boolean closeApplication;
-	public static ContextData serverHandler = null;
+	public static MyContextData serverHandler = null;
 	/*public static ContextData userHandler = null;*/
 	public static Location mLocation;
 	public static ProfileHandler mProfileHandler;
@@ -274,6 +275,7 @@ public class MainActivity extends ActionBarActivity implements ContextData.Liste
 		
 		mProfileHandler = new ProfileHandler(context, mUsername, mPassword);
 		mProfileHandler.getPreviousProfile();
+		
 		
 		groupListView = new MainListViewAdapter(context);
 

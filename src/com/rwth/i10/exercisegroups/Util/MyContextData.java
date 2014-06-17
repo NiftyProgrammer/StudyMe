@@ -19,12 +19,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.ByteArrayBuffer;
 
 import android.os.AsyncTask;
 import android.util.Log;
 import de.contextdata.RandomString;
-import de.contextdata.ContextData.Listener;
 
 public class MyContextData {
 
@@ -34,6 +36,7 @@ public class MyContextData {
 	private String username;
 	private String password;
 	private int appID;
+	private int timeout;
 	private String appSecret;
 	private Listener mGETListener = null;
 	private Listener mPOSTListener = null;
@@ -104,11 +107,11 @@ public class MyContextData {
 	 * @param json
 	 *            The JSON string that should be sent to the interface
 	 */
-	public void post(String api, String json, String session) {
+	public void post(String api, String json) {
 		if (api.startsWith("/"))
 			api.replaceFirst("/", "");
 
-		new PostDataTask().execute(new String[] { api, json, session });
+		new PostDataTask().execute(new String[] { api, json });
 	}
 
 	/**
@@ -126,9 +129,14 @@ public class MyContextData {
 		new GetDataTask().execute(new String[] { api, json });
 	}
 
-	private ArrayList<NameValuePair> getPostData(String data, String nonce) {
+	public void setTimeout(int timeout){
+		this.timeout = timeout;
+	}
+	
+	private ArrayList<NameValuePair> getPostData(String data) {
 		ArrayList<NameValuePair> nvp = new ArrayList<NameValuePair>();
 
+		String nonce = RandomString.randomString(55);
 		nvp.add(new BasicNameValuePair("nonce", convertToUTF8(nonce)));
 		nvp.add(new BasicNameValuePair("aid", convertToUTF8(String
 				.valueOf(appID))));
@@ -203,7 +211,11 @@ public class MyContextData {
 			String params = getGetData(data[1]);
 
 			try {
-				HttpClient httpclient = new DefaultHttpClient();
+				HttpParams param = new BasicHttpParams();
+				HttpConnectionParams.setConnectionTimeout(param, timeout);
+				HttpConnectionParams.setSoTimeout(param, timeout);
+				
+				HttpClient httpclient = new DefaultHttpClient(param);
 				HttpGet httpget = new HttpGet(server + version + "/" + data[0]
 						+ params);
 				Log.d("test", params);
@@ -243,7 +255,7 @@ public class MyContextData {
 	private class PostDataTask extends AsyncTask<String, Void, String> {
 
 		protected String doInBackground(String... data) {
-			ArrayList<NameValuePair> nvp = getPostData(data[1], data[2]);
+			ArrayList<NameValuePair> nvp = getPostData(data[1]);
 
 			try {
 				HttpClient httpclient = new DefaultHttpClient();

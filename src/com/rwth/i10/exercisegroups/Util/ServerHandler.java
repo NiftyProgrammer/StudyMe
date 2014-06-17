@@ -15,8 +15,8 @@ public class ServerHandler {
 		this.contextData = contextData;
 	}
 	
-	public static ContextData createInstance(String mUsername, String mPassword){
-		return new ContextData("http://api.learning-context.de/", 3, mUsername, mPassword, 23, 
+	public static MyContextData createInstance(String mUsername, String mPassword){
+		return new MyContextData("http://api.learning-context.de/", 3, mUsername, mPassword, 23, 
 				"pcawfzywxcuztk2rbpl58vnts0rzv0mq1bsk9kqk75a52wafph");
 	}
 	public static MyContextData createMyInstance(String mUsername, String mPassword){

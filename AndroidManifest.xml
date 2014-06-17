@@ -84,7 +84,8 @@
         </activity>
         <activity
             android:name="com.rwth.i10.exercisegroups.Activitys.ProfileActivity"
-            android:label="@string/title_activity_profile" >
+            android:label="@string/title_activity_profile"
+            android:windowSoftInputMode="adjustResize|stateVisible" >
         </activity>
     </application>
 

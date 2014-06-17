@@ -148,7 +148,7 @@ public class MainListViewAdapter extends BaseAdapter {
 				for(int i=0; i<add.getMaxAddressLineIndex(); i++)
 					address.append(add.getAddressLine(i));
 				
-				ContextData mContextData = ServerHandler.createInstance(
+				MyContextData mContextData = ServerHandler.createInstance(
 						context.getString(R.string.server_username), 
 						context.getString(R.string.server_password));
 				Event event = new Event(action, "ANNOUNCEMENT", (int)System.currentTimeMillis());

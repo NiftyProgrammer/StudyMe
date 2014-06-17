@@ -9,7 +9,6 @@ import com.rwth.i10.exercisegroups.R;
 import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
 
 import de.contextdata.ContextData;
-import de.contextdata.ContextData.Listener;
 import de.contextdata.Entity;
 import de.contextdata.Event;
 import de.contextdata.RandomString;
@@ -17,23 +16,28 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class ProfileHandler implements Listener{
+public class ProfileHandler implements MyContextData.Listener{
 
-	private ContextData contextData;
+	private static MyContextData contextData;
 	private Context context;
 	
-	private ProfileData profileData;
+	private static ProfileData profileData;
+	private String error;
 	
 	private boolean deleteAfterwords;
 	private boolean uploadProfile;
+	private boolean processFinished;
+	private static boolean updatedId;
 	
 	public ProfileHandler(Context context) {
 		// TODO Auto-generated constructor stub
 		this.context = context;
 		fetschProfileData();
-		deleteAfterwords = uploadProfile = false;
+		deleteAfterwords = uploadProfile = processFinished = false;
+		updatedId = true;
+		error = new String();
 	}
-	public ProfileHandler(Context context, ContextData contextData){
+	public ProfileHandler(Context context, MyContextData contextData){
 		this(context);
 		this.contextData = contextData;
 		this.contextData.registerGETListener(this);
@@ -44,17 +48,19 @@ public class ProfileHandler implements Listener{
 		this.contextData = ServerHandler.createInstance(username, password);
 		this.contextData.registerGETListener(this);
 		this.contextData.registerPOSTListener(this);
+		this.contextData.setTimeout(60000 * 2);
 	}
 		
 	@Override
 	public void onGETResult(String result) {
 		// TODO Auto-generated method stub
-		//Log.d("Get Result", result);
+		Log.d("Get Result", result);
 		try {
 			JSONObject data = new JSONObject(result);
 			
 			if(data.optInt("result") == 0 || data.optInt("total_events") <= 0){
 				uploadProfile(profileData);
+				return;
 			}
 			ProfileData tempData = new ProfileData();
 			JSONArray events = data.optJSONArray("events");
@@ -63,6 +69,7 @@ public class ProfileHandler implements Listener{
 					JSONObject event = events.optJSONObject(i);
 					JSONArray entities = event.optJSONArray("entities");
 					String app = "", activity = "", disName = "", msgId = "", uname = "";
+					String email = "", description = "";
 					for(int j=0; j<entities.length(); j++){
 						JSONObject obj = entities.optJSONObject(j);
 						if("key".equalsIgnoreCase(obj.optString("app")))
@@ -75,31 +82,37 @@ public class ProfileHandler implements Listener{
 							msgId = obj.optString("value");
 						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_DISPLAY_NAME )))
 							disName = obj.optString("value");
+						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_EMAIL )))
+							email = obj.optString("value");
+						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_DESC )))
+							description = obj.optString("value");
 					}
 					if( "study_me".equalsIgnoreCase(app) &&
 							"profile_data".equalsIgnoreCase(activity) ){
 						tempData.setDisplayName( disName );
 						tempData.setMsg_id( msgId );
-						tempData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
+						profileData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
 						tempData.setUsername( uname );
-						tempData.setEvent_id( event.optString( ProfileData.PROFILE_ID ) );
-						tempData.setEmail( event.optString( ProfileData.PROFILE_EMAIL ) );
-						tempData.setDesc( event.optString( ProfileData.PROFILE_DESC ) );
+						profileData.setEvent_id( event.optString( ProfileData.PROFILE_ID ) );
+						tempData.setEmail( email );
+						tempData.setDesc( description );
 					}
 				}
 				
-				if(!TextUtils.isEmpty(tempData.getEvent_id())){
-					setProfileData(tempData);
+				if(!TextUtils.isEmpty(profileData.getEvent_id())){
 					if(deleteAfterwords){
 						deleteAfterwords = false;
-						deleteProfile(tempData.getEvent_id());
+						deleteProfile(profileData.getEvent_id());
 					}
+					updatedId = false;
+					//setProfileData(tempData);
 				}
 			}
 			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			error = e.getMessage();
 		}
 	}
 	@Override
@@ -112,11 +125,28 @@ public class ProfileHandler implements Listener{
 				uploadProfile = false;
 				uploadProfile(profileData);
 			}
+			else
+				updatedId = true;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			error = e.getMessage();
 		}
-		
+		processFinished = true;
+	}
+	
+	public boolean getProcessFinished(){
+		return processFinished;
+	}
+	public String getError(){
+		return error;
+	}
+	public void changeProcessFinished(){
+		processFinished = false;
+		error = new String();
+	}
+	public void setUpdatedId(){
+		updatedId = false;
 	}
 	
 	public void setContexData(String username, String password){
@@ -125,7 +155,7 @@ public class ProfileHandler implements Listener{
 		this.contextData.registerPOSTListener(this);
 	}
 		
-	public void deleteProfile(ContextData contextData, String id){
+	public void deleteProfile(MyContextData contextData, String id){
 		uploadProfile = true;
 		try {
 			String value = new JSONObject().put("id", id).toString();
@@ -142,9 +172,15 @@ public class ProfileHandler implements Listener{
 	}
 	public void updateProfile(){
 		deleteAfterwords = true;
-		getPreviousProfile();
+		if(updatedId)
+			getPreviousProfile();
+		else{
+			deleteAfterwords = false;
+			deleteProfile(profileData.getEvent_id());
+		}
+			
 	}
-	public void updateProfile(ContextData contextData){
+	public void updateProfile(MyContextData contextData){
 		this.contextData = contextData;
 		this.contextData.registerGETListener(this);
 		this.contextData.registerPOSTListener(this);
@@ -173,7 +209,7 @@ public class ProfileHandler implements Listener{
 	}
 	
 	
-	public void uploadProfile(ContextData contextData, ProfileData pData){
+	public void uploadProfile(MyContextData contextData, ProfileData pData){
 		
 		Event event = new Event("UPDATE", "RELEVANCE", (int)System.currentTimeMillis());
 		event.addEntity(new Entity<String>("app", "study_me"));
@@ -186,7 +222,7 @@ public class ProfileHandler implements Listener{
 		
 		event.setSession(pData.getSession());
 		String value = StaticUtilMethods.eventToString(event);
-		Log.d("Upload Profile post Value", value);
+		//Log.d("Upload Profile post Value", value);
 		contextData.post("events/update", value);
 	}
 	public void uploadProfile(ProfileData pData){
@@ -195,7 +231,7 @@ public class ProfileHandler implements Listener{
 	
 	public void getPreviousProfile(){
 		String value = createFetschProfileString();
-		//Log.d("Get Previous Value", value);
+		Log.d("Get Previous Value", value);
 		contextData.get("events/show", value);
 	}
 	
