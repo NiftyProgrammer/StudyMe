@@ -4,7 +4,9 @@ import java.util.UUID;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -14,7 +16,7 @@ import com.rwth.i10.exercisegroups.Util.GroupData;
 
 import de.contextdata.RandomString;
 
-public class CreateGroupActivity extends Activity {
+public class CreateGroupActivity extends ActionBarActivity {
 
 	private TextView activity;
 	private TextView course;
@@ -52,5 +54,20 @@ public class CreateGroupActivity extends Activity {
 				//MainActivity.mFragmentManager.popBackStack();
 			}
 		});
+		
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		int id = item.getItemId();
+		if (id == R.id.home) {
+			finish();
+		}
+		return super.onOptionsItemSelected(item);
 	}
 }

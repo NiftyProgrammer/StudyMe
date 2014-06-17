@@ -23,6 +23,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.rwth.i10.exercisegroups.R;
+import com.rwth.i10.exercisegroups.Util.MyContextData;
+import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
 
 import de.contextdata.ContextData;
@@ -165,10 +167,8 @@ public class RegisterActivity extends ActionBarActivity {
 			showProgress(true);
 
 
-			ContextData contextData = new ContextData(
-					"http://api.learning-context.de/", 3, "", "", 8, 
-					"fqfc0pqm7rx8940wi40sa0wut6jmqp92vfodhxq1yo8b5vqqm0");
-			contextData.registerPOSTListener(new ContextData.Listener() {
+			MyContextData contextData = ServerHandler.createInstance("", "");
+			contextData.registerPOSTListener(new MyContextData.Listener() {
 
 				@Override
 				public void onPOSTResult(String result) {

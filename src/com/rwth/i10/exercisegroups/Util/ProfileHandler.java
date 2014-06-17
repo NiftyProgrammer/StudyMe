@@ -18,16 +18,16 @@ import android.util.Log;
 
 public class ProfileHandler implements MyContextData.Listener{
 
-	private static MyContextData contextData;
+	private MyContextData contextData;
 	private Context context;
 	
-	private static ProfileData profileData;
+	private ProfileData profileData;
 	private String error;
 	
 	private boolean deleteAfterwords;
 	private boolean uploadProfile;
 	private boolean processFinished;
-	private static boolean updatedId;
+	private boolean updatedId;
 	
 	public ProfileHandler(Context context) {
 		// TODO Auto-generated constructor stub
@@ -72,19 +72,19 @@ public class ProfileHandler implements MyContextData.Listener{
 					String email = "", description = "";
 					for(int j=0; j<entities.length(); j++){
 						JSONObject obj = entities.optJSONObject(j);
-						if("key".equalsIgnoreCase(obj.optString("app")))
+						if("app".equalsIgnoreCase(obj.optString( "key" )))
 							app = obj.optString("value");
-						if("key".equalsIgnoreCase(obj.optString("activity")))
+						if("activity".equalsIgnoreCase(obj.optString( "key" )))
 							activity = obj.optString("value");
-						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_USERNAME )))
+						if(ProfileData.PROFILE_USERNAME.equalsIgnoreCase(obj.optString( "key" )))
 							uname = obj.optString("value");
-						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_MSG_ID )))
+						if(ProfileData.PROFILE_MSG_ID.equalsIgnoreCase(obj.optString( "key" )))
 							msgId = obj.optString("value");
-						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_DISPLAY_NAME )))
+						if(ProfileData.PROFILE_DISPLAY_NAME.equalsIgnoreCase(obj.optString( "key" )))
 							disName = obj.optString("value");
-						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_EMAIL )))
+						if(ProfileData.PROFILE_EMAIL.equalsIgnoreCase(obj.optString( "key" )))
 							email = obj.optString("value");
-						if("key".equalsIgnoreCase(obj.optString( ProfileData.PROFILE_DESC )))
+						if(ProfileData.PROFILE_DESC.equalsIgnoreCase(obj.optString( "key" )))
 							description = obj.optString("value");
 					}
 					if( "study_me".equalsIgnoreCase(app) &&
@@ -93,13 +93,15 @@ public class ProfileHandler implements MyContextData.Listener{
 						tempData.setMsg_id( msgId );
 						profileData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
 						tempData.setUsername( uname );
-						profileData.setEvent_id( event.optString( ProfileData.PROFILE_ID ) );
+						profileData.setEvent_id( event.optInt( ProfileData.PROFILE_ID ) );
 						tempData.setEmail( email );
 						tempData.setDesc( description );
+						
+						setProfileData(tempData);
 					}
 				}
 				
-				if(!TextUtils.isEmpty(profileData.getEvent_id())){
+				if(profileData.getEvent_id() > 0){
 					if(deleteAfterwords){
 						deleteAfterwords = false;
 						deleteProfile(profileData.getEvent_id());
@@ -155,11 +157,11 @@ public class ProfileHandler implements MyContextData.Listener{
 		this.contextData.registerPOSTListener(this);
 	}
 		
-	public void deleteProfile(MyContextData contextData, String id){
-		uploadProfile = true;
+	public void deleteProfile(MyContextData contextData, int id){
+		//uploadProfile = true;
 		try {
 			String value = new JSONObject().put("id", id).toString();
-			//Log.d("Delete profile post value", value);
+			Log.d("Delete profile post value", value);
 			contextData.post("events/delete", value);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -167,15 +169,18 @@ public class ProfileHandler implements MyContextData.Listener{
 			e.printStackTrace();
 		}
 	}
-	public void deleteProfile(String id){
+	public void deleteProfile(int id){
 		deleteProfile(this.contextData, id);
 	}
 	public void updateProfile(){
-		deleteAfterwords = true;
-		if(updatedId)
+		if(updatedId || profileData.getEvent_id() < 1){
+			deleteAfterwords = true;
+			uploadProfile(profileData);
 			getPreviousProfile();
+		}
 		else{
 			deleteAfterwords = false;
+			uploadProfile(profileData);
 			deleteProfile(profileData.getEvent_id());
 		}
 			
@@ -194,8 +199,6 @@ public class ProfileHandler implements MyContextData.Listener{
 	public void setProfileData(ProfileData data){
 		if(TextUtils.isEmpty(profileData.getDisplayName()))
 			profileData.setDisplayName(data.getDisplayName());
-		if(TextUtils.isEmpty(profileData.getEvent_id()))
-			profileData.setEvent_id(data.getEvent_id());
 		if(TextUtils.isEmpty(profileData.getMsg_id()))
 			profileData.setMsg_id(data.getMsg_id());
 		if(TextUtils.isEmpty(profileData.getSession()))
@@ -222,7 +225,7 @@ public class ProfileHandler implements MyContextData.Listener{
 		
 		event.setSession(pData.getSession());
 		String value = StaticUtilMethods.eventToString(event);
-		//Log.d("Upload Profile post Value", value);
+		Log.d("Upload Profile post Value", value);
 		contextData.post("events/update", value);
 	}
 	public void uploadProfile(ProfileData pData){

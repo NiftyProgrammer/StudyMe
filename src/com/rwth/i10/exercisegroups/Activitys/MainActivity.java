@@ -261,18 +261,20 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 
 		closeApplication = false;
 
-		serverHandler = ServerHandler.createInstance(getString(R.string.server_username), getString(R.string.server_password));
-		serverHandler.registerGETListener(this);
-		serverHandler.registerPOSTListener(this);
 
-		/*userHandler = ServerHandler.createInstance(mUsername, mPassword);
-		userHandler.registerGETListener(this);
-		userHandler.registerPOSTListener(this);*/
-				
 		String []credentials = StaticUtilMethods.getUserCredentials(context);
 		mUsername = credentials[0];
 		mPassword = credentials[1];
 		
+		serverHandler = ServerHandler.createInstance(getString(R.string.server_username), getString(R.string.server_password));
+		serverHandler.registerGETListener(this);
+		serverHandler.registerPOSTListener(this);
+		serverHandler.setTimeout(60000 * 2);
+
+		/*userHandler = ServerHandler.createInstance(mUsername, mPassword);
+		userHandler.registerGETListener(this);
+		userHandler.registerPOSTListener(this);*/
+						
 		mProfileHandler = new ProfileHandler(context, mUsername, mPassword);
 		mProfileHandler.getPreviousProfile();
 		
@@ -381,7 +383,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 				super.onPostExecute(result);
 				groupListView.addItem(result);
 			}
-		};
+		}.execute();
 	}
 	
 	private static List<String> receiversIds(){

@@ -258,7 +258,11 @@ public class MyContextData {
 			ArrayList<NameValuePair> nvp = getPostData(data[1]);
 
 			try {
-				HttpClient httpclient = new DefaultHttpClient();
+				HttpParams param = new BasicHttpParams();
+				HttpConnectionParams.setConnectionTimeout(param, timeout);
+				HttpConnectionParams.setSoTimeout(param, timeout);
+				
+				HttpClient httpclient = new DefaultHttpClient(param);
 				HttpPost httppost = new HttpPost(server + version + "/"
 						+ data[0]);
 				httppost.setEntity(new UrlEncodedFormEntity(nvp));

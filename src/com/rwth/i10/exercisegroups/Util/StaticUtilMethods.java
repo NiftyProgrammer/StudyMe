@@ -59,6 +59,8 @@ public class StaticUtilMethods {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
 		if(addresses != null)
 			return addresses.get(0);

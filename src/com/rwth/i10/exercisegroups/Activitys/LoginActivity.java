@@ -19,6 +19,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.rwth.i10.exercisegroups.R;
+import com.rwth.i10.exercisegroups.Util.MyContextData;
+import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
 
 import de.contextdata.ContextData;
@@ -27,7 +29,7 @@ import de.contextdata.ContextData;
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity implements ContextData.Listener{
+public class LoginActivity extends Activity implements MyContextData.Listener{
 
 
 	/**
@@ -184,9 +186,7 @@ public class LoginActivity extends Activity implements ContextData.Listener{
 			showProgress(true);
 
 
-			ContextData contextData = new ContextData(
-					"http://api.learning-context.de/", 3, mUsername, mPassword, 8, 
-					"fqfc0pqm7rx8940wi40sa0wut6jmqp92vfodhxq1yo8b5vqqm0");
+			MyContextData contextData = ServerHandler.createInstance(mUsername, mPassword);
 			contextData.registerGETListener(this);
 			contextData.get("user/test", "");
 
