@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.rwth.i10.exercisegroups.R;
 import com.rwth.i10.exercisegroups.Util.MyContextData;
+import com.rwth.i10.exercisegroups.Util.ProfileHandler;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
 
@@ -280,7 +281,9 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 			JSONObject object = new JSONObject(result);
 			if (object.optInt("result") > 0) {
 				saveCredentials();
-				startActivity(new Intent(LoginActivity.this, MainActivity.class));
+				Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+				intent.putExtra("com.rwth.i10.labproject.firstlogin", true);
+				startActivity(intent);
 				finish();
 			} else {
 

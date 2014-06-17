@@ -70,6 +70,7 @@ import com.rwth.i10.exercisegroups.Util.GroupData;
 import com.rwth.i10.exercisegroups.Util.MessageCategories;
 import com.rwth.i10.exercisegroups.Util.MessagesTypes;
 import com.rwth.i10.exercisegroups.Util.MyContextData;
+import com.rwth.i10.exercisegroups.Util.ProfileData;
 import com.rwth.i10.exercisegroups.Util.ProfileHandler;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.Util.StaticUtilMethods;
@@ -84,7 +85,7 @@ import de.contextdata.Event;
 import de.contextdata.RandomString;
 
 public class MainActivity extends ActionBarActivity implements MyContextData.Listener,
-																LocationListener{
+LocationListener{
 
 
 	public static FragmentManager mFragmentManager;
@@ -94,7 +95,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 	/*public static ContextData userHandler = null;*/
 	public static Location mLocation;
 	public static ProfileHandler mProfileHandler;
-	
+
 
 	private static Activity context;
 
@@ -124,6 +125,12 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 
 		context = this;
 
+		boolean firstLogin = false;
+		Bundle bundle = getIntent().getExtras();
+		if(bundle != null && bundle.containsKey("com.rwth.i10.labproject.firstlogin")){
+			firstLogin = bundle.getBoolean("com.rwth.i10.labproject.firstlogin", false);
+		}
+		
 		if(mapFragment == null)
 		{
 			GoogleMapOptions mapOptions = new GoogleMapOptions()
@@ -143,7 +150,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 			.add(R.id.content_frame, mapFragment)
 			.commit();
 
-		init();
+		init(firstLogin);
 	}
 
 
@@ -166,7 +173,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 		super.onDestroy();
 		databaseSourse.close();
 	}
-	
+
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
@@ -205,7 +212,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 			return true;
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	@Override
 	public void onLocationChanged(Location location) {
 		// TODO Auto-generated method stub
@@ -234,7 +241,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	private boolean checkPlayServices() {
@@ -252,7 +259,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 		return true;
 	}
 
-	private void init(){
+	private void init(boolean firstLogin){
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
 
@@ -265,7 +272,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 		String []credentials = StaticUtilMethods.getUserCredentials(context);
 		mUsername = credentials[0];
 		mPassword = credentials[1];
-		
+
 		serverHandler = ServerHandler.createInstance(getString(R.string.server_username), getString(R.string.server_password));
 		serverHandler.registerGETListener(this);
 		serverHandler.registerPOSTListener(this);
@@ -274,11 +281,12 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 		/*userHandler = ServerHandler.createInstance(mUsername, mPassword);
 		userHandler.registerGETListener(this);
 		userHandler.registerPOSTListener(this);*/
-						
+
 		mProfileHandler = new ProfileHandler(context, mUsername, mPassword);
-		mProfileHandler.getPreviousProfile();
-		
-		
+		if(firstLogin)
+			mProfileHandler.getPreviousProfile();
+
+
 		groupListView = new MainListViewAdapter(context);
 
 		if(checkPlayServices()){
@@ -289,9 +297,9 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 				registerInBackground();
 			}
 		}
-		
+
 		getDatabaseGroups();
-		
+
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		String provider = mLocationManager.getBestProvider(new Criteria(), true);
 		mLocation = mLocationManager.getLastKnownLocation(provider);
@@ -307,7 +315,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 		// since the existing regID is not guaranteed to work with the new
 		// app version.
 		int registeredVersion = prefs.getIntPreferences(Constants.PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-		
+
 		int currentVersion = getAppVersion(context);
 		if (registeredVersion != currentVersion) {
 			return "";
@@ -335,7 +343,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 				try {
 					regId = gcm.register(getString(R.string.gcm_project_code_number));
 					storeRegistrationId(context, regId);
-					
+
 					mProfileHandler.setMessageId(regId);
 					mProfileHandler.updateProfile();
 				} catch (IOException e) {
@@ -346,14 +354,14 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 			}
 		}.execute();
 	}
-	
+
 	private void storeRegistrationId(Context context, String regId) {
-	    ManagePreferences pref = new ManagePreferences(context);
-	    int appVersion = getAppVersion(context);
-	    pref.putStringPreferences(Constants.PROPERTY_REG_ID, regId);
-	    pref.putIntPreferences(Constants.PROPERTY_APP_VERSION, appVersion);
+		ManagePreferences pref = new ManagePreferences(context);
+		int appVersion = getAppVersion(context);
+		pref.putStringPreferences(Constants.PROPERTY_REG_ID, regId);
+		pref.putIntPreferences(Constants.PROPERTY_APP_VERSION, appVersion);
 	}
-	
+
 	private void getDatabaseGroups(){
 		new AsyncTask<Void, Void, ArrayList<GroupData>>(){
 			@Override
@@ -385,26 +393,90 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 			}
 		}.execute();
 	}
-	
-	private static List<String> receiversIds(){
-		List<String> ids = new ArrayList<String>();
-		ids.add(regId);
-		return ids;
-	}
+
 
 	public static void fetschGroups(){
 		serverHandler.get("events/show", StaticUtilMethods.createFetchServerJSON());
 	}
 	public static void sendMessage(String message, MessagesTypes type){
-		HashMap<String, String> params = new HashMap<String, String>();
+
+		final HashMap<String, String> params = new HashMap<String, String>();
 		params.put(MessageCategories.TYPE.getString(), String.valueOf(type.ordinal()));
 		params.put(MessageCategories.MESSAGE.toString(), message);
-		
-		GcmServer server = new GcmServer();
-		server.sendMessage(params, receiversIds(), context);
+
+		JSONObject retrive = new JSONObject();
+		try {
+			retrive.put("model", "COMPLETE");
+			retrive.put("type", "RELEVANCE");
+
+			JSONObject entity1 = new JSONObject();
+			entity1.put("key", "app");
+			entity1.put("value", "study_me");
+
+			JSONObject entity2 = new JSONObject();
+			entity2.put("key", "activity");
+			entity2.put("value", "profile_data");
+
+			retrive.put("entities", new JSONArray().put(entity1).put(entity2));
+		} catch (JSONException e) {}
+
+		MyContextData myContext = ServerHandler.createInstance(context.getString(R.string.server_username), context.getString(R.string.server_password));
+		myContext.setTimeout(60000 *2);
+		myContext.registerGETListener(new MyContextData.Listener() {
+
+			@Override
+			public void onPOSTResult(String result) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onGETResult(String result) {
+				// TODO Auto-generated method stub
+				Log.d("send ids", result);
+				try {
+					List<String> ids = new ArrayList<String>();
+					JSONObject data = new JSONObject(result);
+
+					if(data.optInt("result") != 0 || data.optInt("total_events") > 0){
+						JSONArray events = data.optJSONArray("events");
+						if(events != null){
+							for(int i=0; i<events.length(); i++){
+								JSONObject event = events.optJSONObject(i);
+								JSONArray entities = event.optJSONArray("entities");
+								String app = "", activity = "", msgId = "", uname = "";
+								for(int j=0; j<entities.length(); j++){
+									JSONObject obj = entities.optJSONObject(j);
+									if("app".equalsIgnoreCase(obj.optString( "key" )))
+										app = obj.optString("value");
+									if("activity".equalsIgnoreCase(obj.optString( "key" )))
+										activity = obj.optString("value");
+									if(ProfileData.PROFILE_USERNAME.equalsIgnoreCase(obj.optString( "key" )))
+										uname = obj.optString("value");
+									if(ProfileData.PROFILE_MSG_ID.equalsIgnoreCase(obj.optString( "key" )))
+										msgId = obj.optString("value");
+								}
+								if("study_me".equalsIgnoreCase(app) && "profile_data".equalsIgnoreCase(activity)){
+									ids.add(msgId);
+								}
+							}
+
+							GcmServer server = new GcmServer();
+							server.sendMessage(params, ids, context);
+						}
+					}
+
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+
+
 	}
-	
-	
+
+
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
@@ -443,7 +515,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 				}
 			});
 			((Button)rootView.findViewById(R.id.left_drawer_view_btn)).setOnClickListener(new View.OnClickListener() {
-				
+
 				@Override
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
@@ -452,7 +524,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 				}
 			});
 			((Button)rootView.findViewById(R.id.left_drawer_profile_btn)).setOnClickListener(new View.OnClickListener() {
-				
+
 				@Override
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
@@ -460,7 +532,7 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 					startActivity(new Intent(context, ProfileActivity.class));
 				}
 			});
-			
+
 			/* MapFragment fragment =  (MapFragment)MapFragment.instantiate(context, "com.google.android.gms.maps.MapFragment");
             map = fragment.getMap();
 
@@ -514,13 +586,13 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 				for(int i=0; i< events.length(); i++){
 					JSONObject eve = events.optJSONObject(i);
 					String groupId = eve.optString("session");
-					
+
 					if(eve.optString("action").equalsIgnoreCase("START"))
 						groups.put(groupId, eve);
 					else
 						endedGroups.add(groupId);
 				}
-				
+
 				if(!endedGroups.isEmpty()){
 					for(int i=0; i<endedGroups.size(); i++){
 						groups.remove(endedGroups.get(i));

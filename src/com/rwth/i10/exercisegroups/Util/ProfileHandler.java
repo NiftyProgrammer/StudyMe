@@ -287,5 +287,34 @@ public class ProfileHandler implements MyContextData.Listener{
 		return event.toString();
 	}
 	
+	public void profileDataFromString(String data){
+		String []datas = data.split(SAPERATOR);
+		int index = 0;
+		if(profileData == null)
+			profileData = new ProfileData();
+		
+		profileData.setDesc(datas[index++]);
+		profileData.setDisplayName(datas[index++]);
+		profileData.setEmail(datas[index++]);
+		try {
+			profileData.setEvent_id(Integer.parseInt(datas[index++]));
+		} catch (NumberFormatException e) {}
+		profileData.setMsg_id(datas[index++]);
+		profileData.setSession(datas[index++]);
+		profileData.setUsername(datas[index++]);
+	}
 	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return profileData.getDesc() + SAPERATOR + 
+				profileData.getDisplayName() + SAPERATOR +
+				profileData.getEmail() + SAPERATOR +
+				profileData.getEvent_id() + SAPERATOR +
+				profileData.getMsg_id() + SAPERATOR +
+				profileData.getSession() + SAPERATOR +
+				profileData.getUsername();
+	}
+	
+	private static final String SAPERATOR = "#@#";
 }
