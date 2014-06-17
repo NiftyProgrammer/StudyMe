@@ -29,13 +29,16 @@ public class ProfileHandler implements MyContextData.Listener{
 	private boolean processFinished;
 	private boolean updatedId;
 	
+	private int totalPosts;
+	
 	public ProfileHandler(Context context) {
 		// TODO Auto-generated constructor stub
 		this.context = context;
-		fetschProfileData();
+		//fetschProfileData();
 		deleteAfterwords = uploadProfile = processFinished = false;
 		updatedId = true;
-		error = new String();
+		error = null;
+		totalPosts = 0;
 	}
 	public ProfileHandler(Context context, MyContextData contextData){
 		this(context);
@@ -123,18 +126,17 @@ public class ProfileHandler implements MyContextData.Listener{
 		Log.d("Post Result", result);
 		try {
 			JSONObject obj = new JSONObject(result);
-			if("1".equalsIgnoreCase(obj.optString("result")) && uploadProfile){
-				uploadProfile = false;
-				uploadProfile(profileData);
+			if("1".equalsIgnoreCase(obj.optString("result")) && ++totalPosts > 1 /*&& uploadProfile*/){
+				/*uploadProfile = false;
+				uploadProfile(profileData);*/
+				processFinished = true;
 			}
-			else
-				updatedId = true;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			error = e.getMessage();
+			processFinished = true;
 		}
-		processFinished = true;
 	}
 	
 	public boolean getProcessFinished(){
@@ -145,7 +147,7 @@ public class ProfileHandler implements MyContextData.Listener{
 	}
 	public void changeProcessFinished(){
 		processFinished = false;
-		error = new String();
+		error = null;
 	}
 	public void setUpdatedId(){
 		updatedId = false;
@@ -175,13 +177,13 @@ public class ProfileHandler implements MyContextData.Listener{
 	public void updateProfile(){
 		if(updatedId || profileData.getEvent_id() < 1){
 			deleteAfterwords = true;
-			uploadProfile(profileData);
 			getPreviousProfile();
+			uploadProfile(profileData);
 		}
 		else{
 			deleteAfterwords = false;
-			uploadProfile(profileData);
 			deleteProfile(profileData.getEvent_id());
+			uploadProfile(profileData);
 		}
 			
 	}
@@ -209,6 +211,10 @@ public class ProfileHandler implements MyContextData.Listener{
 			profileData.setDesc(data.getDesc());
 		if(TextUtils.isEmpty(profileData.getEmail()))
 			profileData.setEmail(data.getEmail());
+	}
+	
+	public void setProfileDataId(int id){
+		profileData.setEvent_id(id);
 	}
 	
 	
