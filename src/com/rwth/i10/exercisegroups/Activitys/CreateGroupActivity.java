@@ -50,6 +50,7 @@ public class CreateGroupActivity extends ActionBarActivity {
 				item.setGroup_id(RandomString.randomString(20));
 				Log.d("group_id", item.getGroup_id() + " id");
 				MainActivity.groupListView.addItem(item);
+				MainActivity.databaseSourse.createGroup(item);
 				finish();
 				//MainActivity.mFragmentManager.popBackStack();
 			}
