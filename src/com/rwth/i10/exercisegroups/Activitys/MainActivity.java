@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,8 +47,11 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -55,12 +59,15 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.internal.by;
 import com.google.android.gms.internal.cu;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -74,6 +81,7 @@ import com.rwth.i10.exercisegroups.Util.MyContextData;
 import com.rwth.i10.exercisegroups.Util.ProfileData;
 import com.rwth.i10.exercisegroups.Util.ProfileHandler;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
+import com.rwth.i10.exercisegroups.Util.SlidingUpPanelLayout;
 import com.rwth.i10.exercisegroups.Util.StaticUtilMethods;
 import com.rwth.i10.exercisegroups.database.GroupsDataSource;
 import com.rwth.i10.exercisegroups.database.SQLiteHelper;
@@ -86,7 +94,7 @@ import de.contextdata.Event;
 import de.contextdata.RandomString;
 
 public class MainActivity extends ActionBarActivity implements MyContextData.Listener,
-LocationListener{
+LocationListener, View.OnClickListener{
 
 
 	public static FragmentManager mFragmentManager;
@@ -99,21 +107,27 @@ LocationListener{
 
 
 	private static Activity context;
+	private static MainActivity mainInstance;
 
 	private static GoogleMap map;	
 	private static SupportMapFragment mapFragment;
 	private GoogleCloudMessaging gcm;
 	private AtomicInteger msgId = new AtomicInteger();
 	private static String regId;
+	private static String allGroupsString;
 
 
 	private static ActionBarDrawerToggle mActionBarDrawerToggle;
 	private static DrawerLayout mDrawerLayout;
 	private static View LeftDrawer;
+	private static TextView filterView;
+	private static FrameLayout slidingLayout;
+	private static SlidingUpPanelLayout slidingPanel;
+	private static ArrayList<MarkerOptions> allMarkers = new ArrayList<MarkerOptions>();
 
 	private LocationManager mLocationManager = null;
 	private PlaceholderFragment mFragment;
-	private String 	mUsername,
+	private static String 	mUsername,
 	mPassword;
 
 
@@ -122,16 +136,18 @@ LocationListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
 
 		context = this;
+		mainInstance = this;
 
 		boolean firstLogin = false;
 		Bundle bundle = getIntent().getExtras();
 		if(bundle != null && bundle.containsKey("com.rwth.i10.labproject.firstlogin")){
 			firstLogin = bundle.getBoolean("com.rwth.i10.labproject.firstlogin", false);
 		}
-		
+
 		if(mapFragment == null)
 		{
 			GoogleMapOptions mapOptions = new GoogleMapOptions()
@@ -263,7 +279,7 @@ LocationListener{
 	private void init(boolean firstLogin){
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
-
+		
 		databaseSourse = new GroupsDataSource(context);
 		databaseSourse.open();
 
@@ -373,10 +389,14 @@ LocationListener{
 
 	private void getDatabaseGroups(){
 		new AsyncTask<Void, Void, ArrayList<GroupData>>(){
+			Cursor cursor;
+			protected void onPreExecute() {
+				cursor = databaseSourse.getAllGroups();
+			}
+			
 			@Override
 			protected ArrayList<GroupData> doInBackground(Void... params) {
 				// TODO Auto-generated method stub
-				Cursor cursor = databaseSourse.getAllGroups();
 				ArrayList<GroupData> groups = new ArrayList<GroupData>();
 				if(cursor != null && cursor.moveToFirst()){
 					do{
@@ -465,7 +485,7 @@ LocationListener{
 									if(ProfileData.PROFILE_MSG_ID.equalsIgnoreCase(obj.optString( "key" )))
 										msgId = obj.optString("value");
 								}
-								if("study_me".equalsIgnoreCase(app) && "profile_data".equalsIgnoreCase(activity)){
+								if("study_me".equalsIgnoreCase(app) && "profile_data".equalsIgnoreCase(activity) && !mUsername.equalsIgnoreCase(uname)){
 									ids.add(msgId);
 								}
 							}
@@ -482,6 +502,7 @@ LocationListener{
 			}
 		});
 
+		myContext.get("events/show", retrive.toString());
 
 	}
 
@@ -510,6 +531,18 @@ LocationListener{
 			}
 		}.execute();
 	}
+	
+
+	private void setFilteredGroups(ArrayList<JSONObject> array){
+		SetMarkers marks = new SetMarkers();
+		if(array == null || array.isEmpty()){
+			Toast.makeText(context, "No group found", Toast.LENGTH_SHORT);
+			return;
+		}
+		for(int i=0; i<array.size(); i++)
+			marks.onProgressUpdate(array.get(i));
+		marks.onPostExecute(null);
+	}
 
 	/**
 	 * A placeholder fragment containing a simple view.
@@ -525,6 +558,9 @@ LocationListener{
 			View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
 			LeftDrawer = rootView.findViewById(R.id.left_drawer);
+			filterView = (TextView)rootView.findViewById(R.id.left_drawer_filter);
+			slidingLayout = (FrameLayout)rootView.findViewById(R.id.sliding_up_panal);
+			slidingPanel = (SlidingUpPanelLayout)rootView.findViewById(R.id.left_drawer_sliding_up_panel);
 
 			//setting nevigation drawer
 			mDrawerLayout = (DrawerLayout)rootView.findViewById(R.id.drawer_layout);
@@ -566,23 +602,28 @@ LocationListener{
 					startActivity(new Intent(context, ProfileActivity.class));
 				}
 			});
-			((Button)rootView.findViewById(R.id.left_drawer_profile_change_status)).setOnClickListener(new View.OnClickListener() {
-				
+			Button profileBtn = (Button)rootView.findViewById(R.id.left_drawer_profile_change_status);
+			profileBtn.setBackgroundColor(mProfileHandler.getProfileData().isPublicProfile() ? Color.GREEN : Color.RED);
+			profileBtn.setOnClickListener(new View.OnClickListener() {
+
 				@Override
 				public void onClick(View arg0) {
 					// TODO Auto-generated method stub
 					if(mProfileHandler.getProfileData().isPublicProfile()){
-						mProfileHandler.getProfileData().setPublicProfile(true);
+						new ManagePreferences(context).putBoolPreferences(ProfileData.PROFILE_PUBLIC, false);
+						mProfileHandler.getProfileData().setPublicProfile(false);
 						hideUserProfile();
 						((Button)arg0).setBackgroundColor(Color.RED);
 					}
 					else{
+						new ManagePreferences(context).putBoolPreferences(ProfileData.PROFILE_PUBLIC, true);
 						mProfileHandler.getProfileData().setPublicProfile(true);
 						mProfileHandler.uploadProfile(serverHandler);
 						((Button)arg0).setBackgroundColor(Color.GREEN);
 					}					
 				}
 			});
+			((Button)rootView.findViewById(R.id.left_drawer_filter_btn)).setOnClickListener(mainInstance);
 
 			/* MapFragment fragment =  (MapFragment)MapFragment.instantiate(context, "com.google.android.gms.maps.MapFragment");
             map = fragment.getMap();
@@ -593,12 +634,65 @@ LocationListener{
 		}
 	}
 
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		int id = v.getId();
+		
+		switch(id){
+		
+		case R.id.left_drawer_filter_btn:
+			mDrawerLayout.closeDrawer(LeftDrawer);
+			String getString = filterView.getText().toString();
+			if(!TextUtils.isEmpty(getString)){
+				Log.d("String", getString);
+				try {
+					ArrayList<JSONObject> sendObject = new ArrayList<JSONObject>();
+					JSONObject data = new JSONObject(allGroupsString);
+					JSONArray events = data.getJSONArray("events");
+					for(int j=0; j<events.length(); j++){
+						JSONObject event = events.optJSONObject(j);
+						JSONArray entities = event.optJSONArray("entities");
+						if(entities != null){
+							String course = "";
+							for(int i=0; i<entities.length(); i++){
+								JSONObject entitiy = entities.optJSONObject(i);
+								if(entitiy != null){
+									if("group_course".equalsIgnoreCase(entitiy.optString("key"))){
+										course = entitiy.optString("value");
+										break;
+									}
+								}
+							}
+							Log.d("course", course);
+							if(Pattern.compile(Pattern.quote(course), Pattern.CASE_INSENSITIVE).matcher(getString).find()){
+								sendObject.add(event);
+							}
+						}
+					}
+					
+					setFilteredGroups(sendObject);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else{
+				new SetMarkers().execute(allGroupsString);
+			}
+			break;
+		
+		}
+	}
+	
 	@Override
 	public void onGETResult(String result) {
 		// TODO Auto-generated method stub
-		Log.d("GET Data", result);/*
+		/*Log.d("GET Data", result);
 		int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
 		if(resultCode == ConnectionResult.SUCCESS)*/
+		allGroupsString = result;
 		new SetMarkers().execute(result);
 	}
 
@@ -612,6 +706,14 @@ LocationListener{
 
 	private class SetMarkers extends AsyncTask<String, JSONObject, Void>{
 
+		public SetMarkers() {
+			// TODO Auto-generated constructor stub
+			if(map != null)
+				map.clear();
+			setProgressBarIndeterminateVisibility(true);
+		}
+		
+		
 		@Override
 		protected Void doInBackground(String... params) {
 			// TODO Auto-generated method stub
@@ -688,22 +790,54 @@ LocationListener{
 								lng = 0;
 							}
 					}
-
-					LatLng position = new LatLng(lat, lng);
-
-					map.addMarker(new MarkerOptions()
-					.title(activity)
-					.snippet(course + "\nAddress: " + address)
-					.position(position));
 				}
 
-				map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 13));
 
+				LatLng position = new LatLng(lat, lng);
+				MarkerOptions marker = new MarkerOptions()
+				.title(activity)
+				.snippet(course + "\nAddress: " + address)
+				.position(position);
+				
+				allMarkers.add(marker);
+				map.addMarker(marker);
+				
+				
 			}
-
-
-
+		}
+		
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			setProgressBarIndeterminateVisibility(false);
+			
+			if(allMarkers.isEmpty())
+				return;
+			LatLngBounds.Builder builder = new LatLngBounds.Builder();
+			for (MarkerOptions marker : allMarkers) {
+			    builder.include(marker.getPosition());
+			}
+			LatLngBounds bounds = builder.build();
+			int padding = 0; // offset from edges of the map in pixels
+			CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+			
+			map.moveCamera(cu);
+			map.animateCamera(cu);
+			
+			
+			map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+				
+				@Override
+				public void onInfoWindowClick(Marker marker) {
+					// TODO Auto-generated method stub
+					slidingPanel.expandPanel(0.7f);
+				}
+			});
+			//map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 13));
 		}
 
 	}
+
 }

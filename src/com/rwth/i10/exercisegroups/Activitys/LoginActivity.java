@@ -190,7 +190,7 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 
 			MyContextData contextData = ServerHandler.createInstance(mUsername, mPassword);
 			contextData.registerGETListener(this);
-			contextData.setTimeout(60000);
+			contextData.setTimeout(60000 * 2);
 			contextData.get("user/test", "");
 
 

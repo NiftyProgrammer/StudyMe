@@ -164,9 +164,10 @@ public class MainListViewAdapter extends BaseAdapter {
 				event.addEntity(new Entity<Double>("lng", location.getLongitude()));
 				Gson g = new Gson();
 				String json = "[" + g.toJson(event) + "]";
-				Toast.makeText(context, data.getName() + " group started.", Toast.LENGTH_SHORT).show();
+				Toast.makeText(context, data.getName() + " group" + action +  " .", Toast.LENGTH_SHORT).show();
 				mContextData.post("events/update", json);
 				
+				MainActivity.fetschGroups();
 				MainActivity.sendMessage("", MessagesTypes.UPDATE_GROUPS);
 				
 				data.setStatus(action);
