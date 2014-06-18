@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.rwth.i10.exercisegroups.R;
 import com.rwth.i10.exercisegroups.Activitys.MainActivity;
+import com.rwth.i10.exercisegroups.Util.Constants;
 import com.rwth.i10.exercisegroups.Util.GroupData;
 import com.rwth.i10.exercisegroups.Util.MessagesTypes;
 import com.rwth.i10.exercisegroups.Util.MyContextData;
@@ -154,6 +155,7 @@ public class MainListViewAdapter extends BaseAdapter {
 				Event event = new Event(action, "ANNOUNCEMENT", (int)System.currentTimeMillis());
 				event.setSession(data.getGroup_id());
 				event.addEntity(new Entity<String>("app", "study_me"));
+				event.addEntity(new Entity<Integer>(Constants.PROPERTY_TIMESTAMP, StaticUtilMethods.timestamp()));
 				event.addEntity(new Entity<String>("group_activity", data.getName()));
 				event.addEntity(new Entity<String>("group_course", data.getCourse()));
 				event.addEntity(new Entity<String>("group_address", address.toString()));

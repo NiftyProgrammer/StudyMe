@@ -125,6 +125,7 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 		_mProfileHandler = new ProfileHandler(_context, credentials[0], credentials[1]);
 		_mProfileHandler.fetschProfileData();
 		_mProfileHandler.setUpdatedId();
+		_newData = MainActivity.mProfileHandler.getProfileData();
 
 		if(!TextUtils.isEmpty(_newData.getDisplayName()))
 			_displayName.setText(_newData.getDisplayName());

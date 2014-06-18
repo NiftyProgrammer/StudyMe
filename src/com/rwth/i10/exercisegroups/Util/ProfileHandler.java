@@ -1,5 +1,7 @@
 package com.rwth.i10.exercisegroups.Util;
 
+import java.util.Calendar;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,13 +30,13 @@ public class ProfileHandler implements MyContextData.Listener{
 	private boolean uploadProfile;
 	private boolean processFinished;
 	private boolean updatedId;
-	
+		
 	private int totalPosts;
 	
 	public ProfileHandler(Context context) {
 		// TODO Auto-generated constructor stub
 		this.context = context;
-		//fetschProfileData();
+		fetschProfileData();
 		deleteAfterwords = uploadProfile = processFinished = false;
 		updatedId = true;
 		error = null;
@@ -62,6 +64,8 @@ public class ProfileHandler implements MyContextData.Listener{
 			JSONObject data = new JSONObject(result);
 			
 			if(data.optInt("result") == 0 || data.optInt("total_events") <= 0){
+				if(profileData != null && !TextUtils.isEmpty(profileData.getUsername()) &&
+						!TextUtils.isEmpty(profileData.getMsg_id()))
 				uploadProfile(profileData);
 				return;
 			}
@@ -90,11 +94,16 @@ public class ProfileHandler implements MyContextData.Listener{
 							email = obj.optString("value");
 						if(ProfileData.PROFILE_DESC.equalsIgnoreCase(obj.optString( "key" )))
 							description = obj.optString("value");
-						if(ProfileData.PROFILE_PUBLIC.equalsIgnoreCase(obj.optString( "key" )))
-							publicProfile = obj.getBoolean("value");						
+						try {
+							if(ProfileData.PROFILE_PUBLIC.equalsIgnoreCase(obj.optString( "key" )))
+								publicProfile = Boolean.parseBoolean(obj.getString("value"));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							publicProfile = false;
+						}						
 					}
 					if( "study_me".equalsIgnoreCase(app) &&
-							"profile_data".equalsIgnoreCase(activity) && profileData.getUsername().equalsIgnoreCase(uname) ){
+							"profile_data".equalsIgnoreCase(activity) && uname.equalsIgnoreCase(profileData.getUsername()) ){
 						tempData.setDisplayName( disName );
 						tempData.setMsg_id( msgId );
 						profileData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
@@ -130,7 +139,7 @@ public class ProfileHandler implements MyContextData.Listener{
 		Log.d("Post Result", result);
 		try {
 			JSONObject obj = new JSONObject(result);
-			if("1".equalsIgnoreCase(obj.optString("result")) && ++totalPosts > 1 /*&& uploadProfile*/){
+			if("1".equalsIgnoreCase(obj.optString("result")) && --totalPosts < 1/*&& uploadProfile*/){
 				/*uploadProfile = false;
 				uploadProfile(profileData);*/
 				processFinished = true;
@@ -171,6 +180,7 @@ public class ProfileHandler implements MyContextData.Listener{
 		
 	public void deleteProfile(MyContextData contextData, int id){
 		//uploadProfile = true;
+		totalPosts++;
 		try {
 			String value = new JSONObject().put("id", id).toString();
 			Log.d("Delete profile post value", value);
@@ -233,18 +243,24 @@ public class ProfileHandler implements MyContextData.Listener{
 	}
 	
 	public void uploadProfile(MyContextData contextData, ProfileData pData){
-		
+	
+		totalPosts++;
+				
 		Event event = new Event("UPDATE", "RELEVANCE", (int)System.currentTimeMillis());
+		
 		event.addEntity( new Entity<String>("app", "study_me") );
 		event.addEntity( new Entity<String>("activity", "profile_data") );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_USERNAME, pData.getUsername() ) );
+		event.addEntity( new Entity<Integer>( Constants.PROPERTY_TIMESTAMP, StaticUtilMethods.timestamp() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DISPLAY_NAME, pData.getDisplayName() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_EMAIL, pData.getEmail() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DESC, pData.getDesc() ) );
-		event.addEntity( new Entity<Boolean>( ProfileData.PROFILE_PUBLIC, pData.isPublicProfile() ) );
+		event.addEntity( new Entity<String>( ProfileData.PROFILE_PUBLIC, String.valueOf(pData.isPublicProfile()) ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_MSG_ID, pData.getMsg_id() ) );
 		
-		event.setSession(pData.getSession());
+		event.setSession( TextUtils.isEmpty(profileData.getUsername()) ? 
+				RandomString.randomString(20) : 
+				profileData.getSession() );
 		String value = StaticUtilMethods.eventToString(event);
 		Log.d("Upload Profile post Value", value);
 		contextData.post("events/update", value);

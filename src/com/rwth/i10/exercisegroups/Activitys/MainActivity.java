@@ -23,6 +23,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -340,16 +341,24 @@ LocationListener{
 				if (gcm == null) {
 					gcm = GoogleCloudMessaging.getInstance(context);
 				}
-				try {
-					regId = gcm.register(getString(R.string.gcm_project_code_number));
-					storeRegistrationId(context, regId);
 
-					mProfileHandler.setMessageId(regId);
-					mProfileHandler.updateProfile();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				while(true){
+					try {
+						regId = gcm.register(getString(R.string.gcm_project_code_number));
+						storeRegistrationId(context, regId);
+
+						mProfileHandler.setMessageId(regId);
+						mProfileHandler.updateProfile();
+						if(!TextUtils.isEmpty(regId))
+							break;
+						try {
+							Thread.sleep(10000 * 5);
+						} catch (InterruptedException e) {}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}				
 				return null;
 			}
 		}.execute();
@@ -563,11 +572,14 @@ LocationListener{
 				public void onClick(View arg0) {
 					// TODO Auto-generated method stub
 					if(mProfileHandler.getProfileData().isPublicProfile()){
-						
+						mProfileHandler.getProfileData().setPublicProfile(true);
+						hideUserProfile();
+						((Button)arg0).setBackgroundColor(Color.RED);
 					}
 					else{
+						mProfileHandler.getProfileData().setPublicProfile(true);
 						mProfileHandler.uploadProfile(serverHandler);
-						((Button)arg0).
+						((Button)arg0).setBackgroundColor(Color.GREEN);
 					}					
 				}
 			});

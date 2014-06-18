@@ -1,6 +1,7 @@
 package com.rwth.i10.exercisegroups.Util;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -149,4 +150,7 @@ public class StaticUtilMethods {
 		return json;
 	}
 	
+	public static int timestamp(){
+		return (int)Calendar.getInstance().getTime().getTime();
+	}
 }
