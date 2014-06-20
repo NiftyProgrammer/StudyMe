@@ -561,7 +561,8 @@ LocationListener, View.OnClickListener{
 			filterView = (TextView)rootView.findViewById(R.id.left_drawer_filter);
 			slidingLayout = (FrameLayout)rootView.findViewById(R.id.sliding_up_panal);
 			slidingPanel = (SlidingUpPanelLayout)rootView.findViewById(R.id.left_drawer_sliding_up_panel);
-
+			
+			
 			//setting nevigation drawer
 			mDrawerLayout = (DrawerLayout)rootView.findViewById(R.id.drawer_layout);
 			mActionBarDrawerToggle = 
@@ -625,6 +626,46 @@ LocationListener, View.OnClickListener{
 			});
 			((Button)rootView.findViewById(R.id.left_drawer_filter_btn)).setOnClickListener(mainInstance);
 
+			slidingPanel.setPanelHeight(0);
+			slidingPanel.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+				
+				@Override
+				public void onPanelSlide(View panel, float slideOffset) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void onPanelExpanded(View panel) {
+					// TODO Auto-generated method stub
+					if(allMarkers.isEmpty())
+						return;
+					LatLngBounds.Builder builder = new LatLngBounds.Builder();
+					for (MarkerOptions marker : allMarkers) {
+					    builder.include(marker.getPosition());
+					}
+					LatLngBounds bounds = builder.build();
+					int padding = 0; // offset from edges of the map in pixels
+					CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+					
+					map.moveCamera(cu);
+					map.animateCamera(cu);
+				}
+				
+				@Override
+				public void onPanelCollapsed(View panel) {
+					// TODO Auto-generated method stub
+					slidingLayout.setVisibility(View.GONE);
+					slidingPanel.setPanelHeight(0);
+				}
+				
+				@Override
+				public void onPanelAnchored(View panel) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+			
 			/* MapFragment fragment =  (MapFragment)MapFragment.instantiate(context, "com.google.android.gms.maps.MapFragment");
             map = fragment.getMap();
 
@@ -832,6 +873,7 @@ LocationListener, View.OnClickListener{
 				@Override
 				public void onInfoWindowClick(Marker marker) {
 					// TODO Auto-generated method stub
+					slidingLayout.setVisibility(View.VISIBLE);
 					slidingPanel.expandPanel(0.7f);
 				}
 			});

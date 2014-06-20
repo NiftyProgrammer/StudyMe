@@ -152,7 +152,7 @@ public class MainListViewAdapter extends BaseAdapter {
 				MyContextData mContextData = ServerHandler.createInstance(
 						context.getString(R.string.server_username), 
 						context.getString(R.string.server_password));
-				Event event = new Event(action, "ANNOUNCEMENT", (int)System.currentTimeMillis());
+				Event event = new Event(action, "ANNOUNCEMENT", (int)System.currentTimeMillis() / 1000);
 				event.setSession(data.getGroup_id());
 				event.addEntity(new Entity<String>("app", "study_me"));
 				event.addEntity(new Entity<Integer>(Constants.PROPERTY_TIMESTAMP, StaticUtilMethods.timestamp()));

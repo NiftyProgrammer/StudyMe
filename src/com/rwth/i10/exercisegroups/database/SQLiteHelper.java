@@ -17,6 +17,14 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 								TABLE_LNG = "lng",
 								TABLE_IMAGE = "image";
 	
+	public static final String UTABLE_CREATE = "Users",
+								UTABLE_ID = "id",
+								UTABLE_NAME = "user_name",
+								UTABLE_PUB = "is_public",
+								UTABLE_DNAME = "display_name",
+								UTABLE_EMAIL = "email",
+								UTABLE_DETAILS = "details";
+	
 	private static final String DATABASE_NAME = "groups.db";
 	private static final int DATABASE_VERSION = 1;
 	
@@ -31,6 +39,14 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 			+ TABLE_LNG + " double, "
 			+ TABLE_IMAGE + " blob);"; 
 	
+	private static final String USER_CREATE_TABLE = "create table "
+			+ UTABLE_CREATE + " (" + UTABLE_NAME + " text primary key, "
+			+ UTABLE_ID + " text not null, "
+			+ UTABLE_PUB + " int not null, "
+			+ UTABLE_DNAME + " text, "
+			+ UTABLE_EMAIL + " text, "
+			+ UTABLE_DETAILS + " text);";
+	
 	public SQLiteHelper(Context context) {
 		// TODO Auto-generated constructor stub
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -40,12 +56,14 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase database) {
 		// TODO Auto-generated method stub
 		database.execSQL(DATABASE_CREATE);
+		database.execSQL(USER_CREATE_TABLE);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase database, int arg1, int arg2) {
 		// TODO Auto-generated method stub
 		database.execSQL("DROP TABLE IF EXISTS " + TABLE_CREATE);
+		database.execSQL("DROP TABLE IF EXISTS " + USER_CREATE_TABLE);
 		onCreate(database);
 	}
 

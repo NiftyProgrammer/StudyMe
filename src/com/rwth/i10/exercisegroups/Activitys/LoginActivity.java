@@ -12,11 +12,13 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rwth.i10.exercisegroups.R;
 import com.rwth.i10.exercisegroups.Util.MyContextData;
@@ -190,8 +192,8 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 
 			MyContextData contextData = ServerHandler.createInstance(mUsername, mPassword);
 			contextData.registerGETListener(this);
-			contextData.setTimeout(60000 * 2);
-			contextData.get("user/test", "");
+			contextData.setTimeout(60000 * 5);
+			contextData.get("user/test", "{}");
 
 
 			/*mAuthTask = new UserLoginTask();
@@ -279,6 +281,7 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 		// TODO Auto-generated method stub
 		showProgress(false);
 
+		if(!TextUtils.isEmpty(result))
 		try {
 			JSONObject object = new JSONObject(result);
 			if (object.optInt("result") > 0) {
@@ -300,7 +303,8 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		else
+			Toast.makeText(context, "Unable to connect to server.", Toast.LENGTH_SHORT).show();
 
 
 	}

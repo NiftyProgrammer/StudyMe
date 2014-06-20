@@ -238,8 +238,10 @@ public class MyContextData {
 
 			} catch (ClientProtocolException e) {
 				Log.e(TAG, "There was a protocol based error");
+				Log.e(TAG, e.getMessage());
 			} catch (IOException e) {
 				Log.e(TAG, "There was an IO Stream related error");
+				Log.e(TAG, e.getMessage());
 			}
 
 			return "";

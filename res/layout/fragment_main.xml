@@ -3,7 +3,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.rwth.i10.exercisegroups.Activitys.MainActivity$PlaceholderFragment" >
+    tools:context="com.rwth.i10.exercisegroups.Activitys.MainActivity$PlaceholderFragment" xmlns:app="http://schemas.android.com/apk/res/com.rwth.i10.exercisegroups">
 
     <!-- The main content view -->
 
@@ -22,6 +22,7 @@
             android:id="@+id/sliding_up_panal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:visibility="gone"
             android:gravity="center|top"></FrameLayout>
         
     </com.rwth.i10.exercisegroups.Util.SlidingUpPanelLayout>
