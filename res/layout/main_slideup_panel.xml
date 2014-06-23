@@ -1,105 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView1"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
 
-    <ImageView
-        android:id="@+id/main_view_group_img"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="5dp"
-        android:src="@drawable/group_img" />
-
-    <TextView
-        android:id="@+id/main_view_group_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:layout_toRightOf="@+id/main_view_group_img"
-        android:text="TextView"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    <TextView
-        android:id="@+id/main_view_group_course"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/main_view_group_name"
-        android:layout_below="@+id/main_view_group_name"
-        android:layout_margin="5dp"
-        android:text="TextView" />
-
-    <TextView
-        android:id="@+id/main_view_group_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/main_view_group_img"
-        android:layout_margin="5dp"
-        android:text="TextView" />
-
-    <TextView
-        android:id="@+id/main_view_group_address_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/main_view_group_date"
-        android:layout_margin="5dp"
-        android:textStyle="bold"
-        android:text="Address" />
-
-    <TextView
-        android:id="@+id/main_view_group_address"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/main_view_group_date"
-        android:layout_alignLeft="@+id/main_view_group_course"
-        android:layout_margin="5dp"
-        android:textStyle="italic"
-        android:text="TextView" />
-
-    <TextView
-        android:id="@+id/main_view_group_desc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/main_view_group_address_label"
-        android:layout_margin="5dp"
-        android:text="TextView" />
-
-    <ListView
-        android:id="@+id/main_view_messages_list"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/main_view_group_desc" >
-    </ListView>
+        android:layout_height="match_parent" >
 
-    <EditText
-        android:id="@+id/main_view_message_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/main_view_message_send_btn"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/imageView1"
-        android:layout_marginTop="8dp"
-        android:layout_weight="1"
-        android:ems="10" />
+        <ImageView
+            android:id="@+id/main_view_group_img"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="5dp"
+            android:src="@drawable/group_img" />
 
-    <Button
-        android:id="@+id/main_view_message_send_btn"
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/imageView1"
-        android:layout_marginTop="496dp"
-        android:layout_toRightOf="@+id/main_view_message_text"
-        android:text="Button" />
+        <TextView
+            android:id="@+id/main_view_group_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_toRightOf="@+id/main_view_group_img"
+            android:text="TextView"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:drawableTop="@android:drawable/ic_menu_add"
-        android:text="Join" />
+        <TextView
+            android:id="@+id/main_view_group_course"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/main_view_group_name"
+            android:layout_below="@+id/main_view_group_name"
+            android:layout_margin="5dp"
+            android:text="TextView" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/main_view_group_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/main_view_group_img"
+            android:layout_marginTop="4dp"
+            android:layout_margin="5dp"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/main_view_group_address_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/main_view_group_date"
+            android:layout_margin="5dp"
+            android:text="Address"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/main_view_group_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/main_view_group_course"
+            android:layout_below="@+id/main_view_group_date"
+            android:layout_margin="5dp"
+            android:text="TextView"
+            android:textStyle="italic" />
+
+        <TextView
+            android:id="@+id/main_view_group_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/main_view_group_address_label"
+            android:layout_margin="5dp"
+            android:text="TextView" />
+
+        <LinearLayout
+            android:id="@+id/main_view_messages_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/main_view_group_desc"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/main_view_message_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/main_view_messages_list"
+            android:orientation="horizontal" >
+
+
+            <EditText
+                android:id="@+id/main_view_message_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1" />
+            
+            <Button
+                android:id="@+id/main_view_message_send_btn"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/main_view_join_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:drawableTop="@android:drawable/ic_menu_add"
+            android:text="Join" />
+    </RelativeLayout>
+
+</ScrollView>
