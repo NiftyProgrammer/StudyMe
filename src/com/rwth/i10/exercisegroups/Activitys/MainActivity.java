@@ -427,10 +427,9 @@ LocationListener, View.OnClickListener{
 	public static void fetschGroups(){
 		serverHandler.get("events/show", StaticUtilMethods.createFetchServerJSON());
 	}
-	public static void sendMessage(String message, MessagesTypes type){
+	public static void sendMessage(String message, final MessagesTypes type){
 
 		final HashMap<String, String> params = new HashMap<String, String>();
-		params.put(MessageCategories.TYPE.getString(), String.valueOf(type.ordinal()));
 		params.put(MessageCategories.MESSAGE.toString(), message);
 
 		JSONObject retrive = new JSONObject();
@@ -491,7 +490,7 @@ LocationListener, View.OnClickListener{
 							}
 
 							GcmServer server = new GcmServer();
-							server.sendMessage(params, ids, context);
+							server.sendMessage(params, ids, type, context);
 						}
 					}
 

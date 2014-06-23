@@ -15,6 +15,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 
 import com.rwth.i10.exercisegroups.R;
+import com.rwth.i10.exercisegroups.Util.MessagesTypes;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -27,7 +28,7 @@ public class GcmServer {
 	private int status;
 	
 	public void sendMessage(final Map<String, String> msgParams,
-			final List<String> regIds,
+			final List<String> regIds, final MessagesTypes type,
 			Context context){
 		
 		this.context = context;
@@ -38,7 +39,7 @@ public class GcmServer {
 			protected Void doInBackground(Void... params) {
 				// TODO Auto-generated method stub
 				try {
-					post(msgParams, regIds);
+					post(msgParams, regIds, type);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					Log.d("Server_error", e.getMessage());
@@ -50,7 +51,7 @@ public class GcmServer {
 	}
 	
 
-	private void post(Map<String, String> msgParams, List<String> regIds)
+	private void post(Map<String, String> msgParams, List<String> regIds, MessagesTypes type)
 						throws IOException{
 		// TODO Auto-generated method stub
 		URL url;
@@ -72,13 +73,18 @@ public class GcmServer {
                 bodyBuilder.append('&');
             }
         }
-
+        
+        
         // add the regId to the end
         String body = bodyBuilder.toString();
         Iterator<String> regIdIterator = regIds.iterator();
         while (regIdIterator.hasNext()){
             body += "&registration_id="+regIdIterator.next();
         }
+        body += "&restricted_package_name=com.rwth.i10.exercisegroups";
+        
+        if(type != MessagesTypes.RECEIVE_MESSAGE)
+        body += "&collapse_key=" + String.valueOf(type.ordinal());
 
         byte[] bytes = body.getBytes();
         HttpsURLConnection conn = null;
