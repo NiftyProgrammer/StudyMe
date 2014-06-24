@@ -4,9 +4,10 @@ import android.graphics.Bitmap;
 
 public class GroupData {
 
-	private String name, course, group_id, address, status;
+	private String name, course, group_id, address, status, description;
 	private Bitmap image;
 	private double lat, lng;
+	private long timestamp;
 	private int MaxNumber;
 	
 	public GroupData(String name, String course, String address, int MaxNumber, Bitmap image){
@@ -38,6 +39,10 @@ public class GroupData {
 		this.lat = lat;
 	}public void setLng(double lng) {
 		this.lng = lng;
+	}public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}public void setDescription(String description) {
+		this.description = description;
 	}
 	public String getName() {
 		return name;
@@ -57,5 +62,9 @@ public class GroupData {
 		return lat;
 	}public double getLng() {
 		return lng;
+	}public long getTimestamp() {
+		return timestamp;
+	}public String getDescription() {
+		return description;
 	}	
 }

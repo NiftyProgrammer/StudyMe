@@ -2,10 +2,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_horizontal_margin"
     android:paddingLeft="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_vertical_margin"
-    android:paddingTop="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_horizontal_margin" >
+    android:paddingTop="@dimen/activity_horizontal_margin" >
 
     <EditText
         android:id="@+id/create_group_activity_text"
@@ -13,8 +13,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:hint="@string/create_group_activity_str"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:hint="@string/create_group_activity_str"
         android:inputType="textPersonName" >
 
         <requestFocus />
@@ -24,24 +24,42 @@
         android:id="@+id/create_group_course_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/create_group_course_str"
         android:layout_alignLeft="@+id/create_group_activity_text"
         android:layout_below="@+id/create_group_activity_text"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin" />
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:hint="@string/create_group_course_str" />
+
+    <EditText
+        android:id="@+id/create_group_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_marginTop="4dp"
+        android:hint="Group Description"
+        android:layout_alignLeft="@+id/create_group_course_text"
+        android:layout_below="@+id/create_group_course_text"
+        android:inputType="textMultiLine|textCapSentences"
+        android:lines="4"
+        android:singleLine="false" />
 
     <ImageView
         android:id="@+id/create_group_img"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/create_group_course_text"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:clickable="true"
+        android:layout_below="@+id/create_group_desc"
         android:src="@drawable/group_img" />
 
     <Button
         android:id="@+id/create_group_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/create_group_course_text"
+        android:layout_below="@+id/create_group_desc"
         android:text="@string/create_group_btn_str" />
 
 </RelativeLayout>

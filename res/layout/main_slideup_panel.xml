@@ -23,7 +23,6 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:layout_toRightOf="@+id/main_view_group_img"
-            android:text="TextView"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
@@ -32,8 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/main_view_group_name"
             android:layout_below="@+id/main_view_group_name"
-            android:layout_margin="5dp"
-            android:text="TextView" />
+            android:layout_margin="5dp" />
 
         <TextView
             android:id="@+id/main_view_group_date"
@@ -41,11 +39,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/main_view_group_img"
             android:layout_marginTop="4dp"
-            android:layout_margin="5dp"
-            android:text="TextView" />
+            android:layout_margin="5dp" />
 
         <TextView
-            android:id="@+id/main_view_group_address_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/main_view_group_date"
@@ -60,7 +56,6 @@
             android:layout_alignLeft="@+id/main_view_group_course"
             android:layout_below="@+id/main_view_group_date"
             android:layout_margin="5dp"
-            android:text="TextView"
             android:textStyle="italic" />
 
         <TextView
@@ -68,8 +63,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/main_view_group_address_label"
-            android:layout_margin="5dp"
-            android:text="TextView" />
+            android:layout_margin="5dp" />
 
         <LinearLayout
             android:id="@+id/main_view_messages_list"
@@ -99,7 +93,7 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Button" />
+                android:drawableStart="@android:drawable/ic_menu_send" />
         </LinearLayout>
 
         <Button

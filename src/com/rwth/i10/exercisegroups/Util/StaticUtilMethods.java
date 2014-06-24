@@ -23,6 +23,7 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 public class StaticUtilMethods {
@@ -152,5 +153,12 @@ public class StaticUtilMethods {
 	
 	public static int timestamp(){
 		return (int)Calendar.getInstance().getTime().getTime();
+	}
+	
+	public static String getDate(long time) {
+	    Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+	    cal.setTimeInMillis(time);
+	    String date = DateFormat.format("dd-MM-yyyy", cal).toString();
+	    return date;
 	}
 }

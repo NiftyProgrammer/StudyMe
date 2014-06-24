@@ -147,7 +147,7 @@ public class MainListViewAdapter extends BaseAdapter {
 				StringBuilder address = new StringBuilder();
 				if(add != null)
 				for(int i=0; i<add.getMaxAddressLineIndex(); i++)
-					address.append(add.getAddressLine(i));
+					address.append(add.getAddressLine(i) + " ");
 				
 				MyContextData mContextData = ServerHandler.createInstance(
 						context.getString(R.string.server_username), 

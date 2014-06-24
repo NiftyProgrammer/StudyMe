@@ -14,7 +14,7 @@ import android.util.Log;
 public class GroupsDataSource {
 
 	private SQLiteHelper dbHelper;
-	private SQLiteDatabase database;
+	private SQLiteDatabase writableDatabase, readableDatabase;
 	private String[] allColumns = {SQLiteHelper.TABLE_ID, SQLiteHelper.TABLE_AVTIVITY,
 			SQLiteHelper.TABLE_COURSE, SQLiteHelper.TABLE_ADDRESS, SQLiteHelper.TABLE_STATUS,
 			SQLiteHelper.TABLE_MAX_PART, SQLiteHelper.TABLE_LAT, SQLiteHelper.TABLE_LNG, 
@@ -30,12 +30,13 @@ public class GroupsDataSource {
 	}
 	
 	public void open() throws SQLException{
-		database = dbHelper.getWritableDatabase();
+		writableDatabase = dbHelper.getWritableDatabase();
+		readableDatabase = dbHelper.getReadableDatabase();
 	}
 	
 	public void close(){
 		dbHelper.close();
-		database.close();
+		writableDatabase.close();
 	}
 	
 	public boolean createGroup(GroupData group){
@@ -59,11 +60,11 @@ public class GroupsDataSource {
 			contValues.put(allColumns[8], new byte[]{});*/
 		long value = 0;
 		try {
-			value = database.insertOrThrow(SQLiteHelper.TABLE_CREATE, null, contValues);
+			value = writableDatabase.insertOrThrow(SQLiteHelper.TABLE_CREATE, null, contValues);
 			return true;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			value = database.update(SQLiteHelper.TABLE_CREATE, contValues, allColumns[0] + " = ?", new String[]{group.getGroup_id()});
+			value = writableDatabase.update(SQLiteHelper.TABLE_CREATE, contValues, allColumns[0] + " = ?", new String[]{group.getGroup_id()});
 		}
 		if(value > 0)
 			return true;
@@ -72,18 +73,18 @@ public class GroupsDataSource {
 	}
 		
 	public Cursor getAllStartGroups(){
-		return database.query(SQLiteHelper.TABLE_CREATE, allColumns, SQLiteHelper.TABLE_STATUS + " = ?", 
+		return readableDatabase.query(SQLiteHelper.TABLE_CREATE, allColumns, SQLiteHelper.TABLE_STATUS + " = ?", 
 				new String[]{"START"}, null, null, null);
 	}
 	public Cursor getAllGroups(){
-		return database.query(SQLiteHelper.TABLE_CREATE, allColumns, null, null, null, null, null);
+		return readableDatabase.query(SQLiteHelper.TABLE_CREATE, allColumns, null, null, null, null, null);
 	}
 	
 	public int deleteGroup(String id){
-		return database.delete(SQLiteHelper.TABLE_CREATE, allColumns[0] + " = ?", new String[]{id});
+		return writableDatabase.delete(SQLiteHelper.TABLE_CREATE, allColumns[0] + " = ?", new String[]{id});
 	}
 	public int deleteGroup(GroupData group){
-		return database.delete(SQLiteHelper.TABLE_CREATE, allColumns[0] + " = ?, " +
+		return writableDatabase.delete(SQLiteHelper.TABLE_CREATE, allColumns[0] + " = ?, " +
 				allColumns[1] + " = ?, " + allColumns[2] + " = ?", new String[]{group.getGroup_id(),
 				group.getName(), group.getCourse()});
 	}
@@ -103,11 +104,11 @@ public class GroupsDataSource {
 			contValues.put(allColumns[8], new byte[]{});*/
 		long value = 0;
 		try {
-			value = database.insertOrThrow(SQLiteHelper.UTABLE_CREATE, null, contValues);
+			value = writableDatabase.insertOrThrow(SQLiteHelper.UTABLE_CREATE, null, contValues);
 			return true;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			value = database.update(SQLiteHelper.UTABLE_CREATE, contValues, allColumns[0] + " = ?", new String[]{data.getUsername()});
+			value = writableDatabase.update(SQLiteHelper.UTABLE_CREATE, contValues, allColumns[0] + " = ?", new String[]{data.getUsername()});
 		}
 		if(value > 0)
 			return true;
@@ -128,7 +129,7 @@ public class GroupsDataSource {
 			selectionArgs = username;
 		}
 		
-		Cursor cursor = database.query(SQLiteHelper.UTABLE_CREATE, userAllColumns, selection + " = ?", new String[]{selectionArgs}, null, null, null);
+		Cursor cursor = readableDatabase.query(SQLiteHelper.UTABLE_CREATE, userAllColumns, selection + " = ?", new String[]{selectionArgs}, null, null, null);
 		
 		int index = 0;
 		while(cursor.moveToNext()){

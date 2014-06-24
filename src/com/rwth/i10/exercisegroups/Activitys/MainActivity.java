@@ -45,6 +45,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -121,9 +122,9 @@ LocationListener, View.OnClickListener{
 	private static DrawerLayout mDrawerLayout;
 	private static View LeftDrawer;
 	private static TextView filterView;
-	private static FrameLayout slidingLayout;
+	private static View slidingLayout;
 	private static SlidingUpPanelLayout slidingPanel;
-	private static ArrayList<MarkerOptions> allMarkers = new ArrayList<MarkerOptions>();
+	private static HashMap<Marker, GroupData> allMarkers = new HashMap<Marker, GroupData>();
 
 	private LocationManager mLocationManager = null;
 	private PlaceholderFragment mFragment;
@@ -196,8 +197,10 @@ LocationListener, View.OnClickListener{
 		// TODO Auto-generated method stub
 		super.onStart();
 
-		if(StaticUtilMethods.isNetworkAvailable(context))
+		if(StaticUtilMethods.isNetworkAvailable(context)){
+			setProgressBarIndeterminateVisibility(true);
 			fetschGroups();
+		}
 		else
 			Toast.makeText(context, "Network not connected", Toast.LENGTH_LONG).show();
 	}
@@ -233,6 +236,9 @@ LocationListener, View.OnClickListener{
 	@Override
 	public void onLocationChanged(Location location) {
 		// TODO Auto-generated method stub
+		if(location.distanceTo(mLocation) > 50){
+			//stop group if running
+		}
 		if(StaticUtilMethods.isBetterLocation(mLocation, location))
 			mLocation = location;
 	}
@@ -389,14 +395,15 @@ LocationListener, View.OnClickListener{
 
 	private void getDatabaseGroups(){
 		new AsyncTask<Void, Void, ArrayList<GroupData>>(){
-			Cursor cursor;
+			
 			protected void onPreExecute() {
-				cursor = databaseSourse.getAllGroups();
+				//cursor = 
 			}
 			
 			@Override
 			protected ArrayList<GroupData> doInBackground(Void... params) {
 				// TODO Auto-generated method stub
+				Cursor cursor = databaseSourse.getAllGroups();
 				ArrayList<GroupData> groups = new ArrayList<GroupData>();
 				if(cursor != null && cursor.moveToFirst()){
 					do{
@@ -558,7 +565,7 @@ LocationListener, View.OnClickListener{
 
 			LeftDrawer = rootView.findViewById(R.id.left_drawer);
 			filterView = (TextView)rootView.findViewById(R.id.left_drawer_filter);
-			slidingLayout = (FrameLayout)rootView.findViewById(R.id.sliding_up_panal);
+			slidingLayout = rootView.findViewById(R.id.sliding_up_panal);
 			slidingPanel = (SlidingUpPanelLayout)rootView.findViewById(R.id.left_drawer_sliding_up_panel);
 			
 			
@@ -625,7 +632,7 @@ LocationListener, View.OnClickListener{
 			});
 			((Button)rootView.findViewById(R.id.left_drawer_filter_btn)).setOnClickListener(mainInstance);
 
-			slidingPanel.setPanelHeight(0);
+			slidingPanel.setSlidingEnabled(false);
 			slidingPanel.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
 				
 				@Override
@@ -640,7 +647,7 @@ LocationListener, View.OnClickListener{
 					if(allMarkers.isEmpty())
 						return;
 					LatLngBounds.Builder builder = new LatLngBounds.Builder();
-					for (MarkerOptions marker : allMarkers) {
+					for (Marker marker : allMarkers.keySet()) {
 					    builder.include(marker.getPosition());
 					}
 					LatLngBounds bounds = builder.build();
@@ -655,6 +662,7 @@ LocationListener, View.OnClickListener{
 				public void onPanelCollapsed(View panel) {
 					// TODO Auto-generated method stub
 					slidingLayout.setVisibility(View.GONE);
+					slidingPanel.setSlidingEnabled(false);
 					slidingPanel.setPanelHeight(0);
 				}
 				
@@ -664,6 +672,7 @@ LocationListener, View.OnClickListener{
 					
 				}
 			});
+			slidingPanel.setEnableDragViewTouchEvents(true);
 			
 			/* MapFragment fragment =  (MapFragment)MapFragment.instantiate(context, "com.google.android.gms.maps.MapFragment");
             map = fragment.getMap();
@@ -748,11 +757,27 @@ LocationListener, View.OnClickListener{
 
 		public SetMarkers() {
 			// TODO Auto-generated constructor stub
-			if(map != null)
+			if(map != null){
 				map.clear();
+				allMarkers.clear();
+			}
 			setProgressBarIndeterminateVisibility(true);
 		}
 		
+		private boolean isWithinDistance(double groupLat, double groupLng){
+			double latDistance = Math.toRadians(mLocation.getLatitude() - groupLat);
+            double lngDistance = Math.toRadians(mLocation.getLongitude() - groupLng);
+            double a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2)) +
+                            (Math.cos(Math.toRadians(mLocation.getLatitude()))) *
+                            (Math.cos(Math.toRadians(groupLat))) *
+                            (Math.sin(lngDistance / 2)) *
+                            (Math.sin(lngDistance / 2));
+
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            double dist = 6371 * c;             
+            return dist < 50;
+		}
 		
 		@Override
 		protected Void doInBackground(String... params) {
@@ -780,10 +805,27 @@ LocationListener, View.OnClickListener{
 					JSONObject eve = events.optJSONObject(i);
 					String groupId = eve.optString("session");
 
-					if(eve.optString("action").equalsIgnoreCase("START"))
-						groups.put(groupId, eve);
-					else
-						endedGroups.add(groupId);
+					JSONArray entities = eve.optJSONArray("entities");
+					if(entities != null){
+						double lat = 0, lng = 0;
+						for(int j=0; j<entities.length(); j++){
+							JSONObject entity = entities.optJSONObject(j);
+							if(entity != null){
+								if("lat".equalsIgnoreCase(entity.optString("key")))
+									lat = entity.optDouble("value");
+								if("lng".equalsIgnoreCase(entity.optString("key")))
+									lng = entity.optDouble("value");
+							}
+						}
+						
+						if(isWithinDistance(lat, lng)){
+							if(eve.optString("action").equalsIgnoreCase("START"))
+								groups.put(groupId, eve);
+							else
+								endedGroups.add(groupId);
+						}
+						
+					}					
 				}
 
 				if(!endedGroups.isEmpty()){
@@ -798,50 +840,51 @@ LocationListener, View.OnClickListener{
 
 			return null;
 		}
-
+		
 		@Override
 		protected void onProgressUpdate(JSONObject... values) {
 			// TODO Auto-generated method stub
-			String activity = "", course = "", address = "";
+			GroupData data = new GroupData();
 			JSONArray entities = values[0].optJSONArray("entities");
-			double lat = 0, lng = 0;
 			if(entities != null){
+				data.setGroup_id(values[0].optString("session"));
+				data.setStatus(values[0].optString("action"));
+				data.setTimestamp(values[0].optLong("timestamp"));
 				for(int i=0; i<entities.length(); i++){
 					JSONObject entitiy = entities.optJSONObject(i);
 					if(entitiy != null){
 						if("group_activity".equalsIgnoreCase(entitiy.optString("key")))
-							activity = entitiy.optString("value");
+							data.setName(entitiy.optString("value"));
 						if("group_course".equalsIgnoreCase(entitiy.optString("key")))
-							course = entitiy.optString("value");
+							data.setCourse(entitiy.optString("value"));
 						if("group_address".equalsIgnoreCase(entitiy.optString("key")))
-							address = entitiy.optString("value");
+							data.setAddress(entitiy.optString("value"));
 						if("lat".equalsIgnoreCase(entitiy.optString("key")))
 							try {
-								lat = Double.parseDouble(String.valueOf(entitiy.opt("value")));
+								data.setLat(Double.parseDouble(String.valueOf(entitiy.opt("value"))));
 							} catch (NumberFormatException e) {
 								// TODO Auto-generated catch block
-								lat = 0;
+								data.setLat(0);
 							}
 						if("lng".equalsIgnoreCase(entitiy.optString("key")))
 							try {
-								lng = Double.parseDouble(String.valueOf(entitiy.opt("value")));
+								data.setLng(Double.parseDouble(String.valueOf(entitiy.opt("value"))));
 							} catch (NumberFormatException e) {
 								// TODO Auto-generated catch block
-								lng = 0;
+								data.setLng(0);
 							}
 					}
 				}
 
 
-				LatLng position = new LatLng(lat, lng);
+				LatLng position = new LatLng(data.getLat(), data.getLng());
 				MarkerOptions marker = new MarkerOptions()
-				.title(activity)
-				.snippet(course + "\nAddress: " + address)
+				.title(data.getName())
+				.snippet(data.getCourse())
 				.position(position);
 				
-				allMarkers.add(marker);
-				map.addMarker(marker);
-				
+				Marker mark = map.addMarker(marker);
+				allMarkers.put(mark, data);
 				
 			}
 		}
@@ -856,11 +899,11 @@ LocationListener, View.OnClickListener{
 			if(allMarkers.isEmpty())
 				return;
 			LatLngBounds.Builder builder = new LatLngBounds.Builder();
-			for (MarkerOptions marker : allMarkers) {
+			for (Marker marker : allMarkers.keySet()) {
 			    builder.include(marker.getPosition());
 			}
 			LatLngBounds bounds = builder.build();
-			int padding = 0; // offset from edges of the map in pixels
+			int padding = 50; // offset from edges of the map in pixels
 			CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
 			
 			map.moveCamera(cu);
@@ -872,6 +915,15 @@ LocationListener, View.OnClickListener{
 				@Override
 				public void onInfoWindowClick(Marker marker) {
 					// TODO Auto-generated method stub
+					GroupData data = allMarkers.get(marker);
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_name)).setText(data.getName());
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_address)).setText(data.getAddress());
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_course)).setText(data.getCourse());
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_date)).setText( StaticUtilMethods.getDate( data.getTimestamp() ) );
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_desc)).setText( data.getDescription() );
+					
+					slidingPanel.setPanelHeight(50);
+					slidingPanel.setSlidingEnabled(true);
 					slidingLayout.setVisibility(View.VISIBLE);
 					slidingPanel.expandPanel(0.7f);
 				}
