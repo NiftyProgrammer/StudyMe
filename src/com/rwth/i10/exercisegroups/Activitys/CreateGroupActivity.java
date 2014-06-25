@@ -1,5 +1,8 @@
 package com.rwth.i10.exercisegroups.Activitys;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,12 +10,13 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
+import android.graphics.Canvas;
+import android.graphics.Path;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -22,6 +26,7 @@ import android.widget.TextView;
 
 import com.rwth.i10.exercisegroups.R;
 import com.rwth.i10.exercisegroups.Util.GroupData;
+import com.rwth.i10.exercisegroups.Util.StaticUtilMethods;
 
 import de.contextdata.RandomString;
 
@@ -69,9 +74,15 @@ public class CreateGroupActivity extends ActionBarActivity {
 				MainActivity.mFragmentManager.popBackStack();*/
 				GroupData item = new GroupData(activity.getText().toString(), course.getText().toString(), "", 0, null);
 				item.setGroup_id(RandomString.randomString(20));
-				item.setImage(imageDrawable);
 				item.setDescription(desc.getText().toString());
-				Log.d("group_id", item.getGroup_id() + " id");
+				item.setAdmin(MainActivity.regId);
+				
+				//compress image
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				imageDrawable.compress(Bitmap.CompressFormat.JPEG, 100, out);
+				Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+				item.setImage(StaticUtilMethods.getRoundedShape(decoded));
+				
 				MainActivity.groupListView.addItem(item);
 				MainActivity.databaseSourse.createGroup(item);
 				finish();
@@ -150,5 +161,5 @@ public class CreateGroupActivity extends ActionBarActivity {
 			finish();
 		}
 		return super.onOptionsItemSelected(item);
-	}
+	}	
 }

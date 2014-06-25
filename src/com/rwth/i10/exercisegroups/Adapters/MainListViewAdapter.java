@@ -1,13 +1,15 @@
 package com.rwth.i10.exercisegroups.Adapters;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Address;
 import android.location.Location;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,10 +29,8 @@ import com.rwth.i10.exercisegroups.Util.MyContextData;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.Util.StaticUtilMethods;
 
-import de.contextdata.ContextData;
 import de.contextdata.Entity;
 import de.contextdata.Event;
-import de.contextdata.RandomString;
 
 public class MainListViewAdapter extends BaseAdapter {
 
@@ -112,11 +112,12 @@ public class MainListViewAdapter extends BaseAdapter {
 				else{
 					removeItem(data);
 					MainActivity.databaseSourse.deleteGroup(data.getGroup_id());
+					MainActivity.deleteGroupFromServer(data.getGroup_id());
 				}
 			}
 		});
 		Button status_btn = (Button)rootView.findViewById(R.id.adapter_group_list_status_btn);
-		if(!TextUtils.isEmpty(data.getStatus())){
+		if(!TextUtils.isEmpty(data.getStatus()) && data.getStatus().equalsIgnoreCase("START")){
 			runningGroup = data.getName();
 			status_btn.setText("Stop");
 		}
@@ -159,9 +160,21 @@ public class MainListViewAdapter extends BaseAdapter {
 				event.addEntity(new Entity<String>("group_activity", data.getName()));
 				event.addEntity(new Entity<String>("group_course", data.getCourse()));
 				event.addEntity(new Entity<String>("group_address", address.toString()));
-				event.addEntity(new Entity<Integer>("group_max_particiepent", data.getMaxNumber()));
+				event.addEntity(new Entity<String>("group_id", data.getGroup_id()));
+				event.addEntity(new Entity<String>("group_admin", data.getAdmin()));
+				event.addEntity(new Entity<String>("group_desc", data.getDescription()));
 				event.addEntity(new Entity<Double>("lat", location.getLatitude()));
 				event.addEntity(new Entity<Double>("lng", location.getLongitude()));
+				
+				String imageData = null;
+				if(data.getImage() != null){
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();  
+					data.getImage().compress(Bitmap.CompressFormat.JPEG, 100, baos);    
+					byte[] byteArrayImage = baos.toByteArray();
+					imageData = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
+				}
+				event.addEntity(new Entity<String>("group_img", imageData));
+				
 				Gson g = new Gson();
 				String json = "[" + g.toJson(event) + "]";
 				Toast.makeText(context, data.getName() + " group" + action +  " .", Toast.LENGTH_SHORT).show();

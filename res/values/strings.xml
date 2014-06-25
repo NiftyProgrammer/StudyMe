@@ -22,7 +22,7 @@
     <!-- create group activity -->
 
     <string name="title_activity_create_group">New Group</string>
-    <string name="create_group_activity_str">Activity Name</string>
+    <string name="create_group_activity_str">Group Name</string>
     <string name="create_group_course_str">Course Title</string>
     <string name="create_group_btn_str">Create Group</string>
     <string name="title_activity_main_list">Me Study</string>

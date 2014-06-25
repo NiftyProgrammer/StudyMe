@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 public class GroupData {
 
 	private String name, course, group_id, address, status, description;
+	private String admin;
 	private Bitmap image;
 	private double lat, lng;
 	private long timestamp;
@@ -43,6 +44,8 @@ public class GroupData {
 		this.timestamp = timestamp;
 	}public void setDescription(String description) {
 		this.description = description;
+	}public void setAdmin(String admin) {
+		this.admin = admin;
 	}
 	public String getName() {
 		return name;
@@ -66,5 +69,7 @@ public class GroupData {
 		return timestamp;
 	}public String getDescription() {
 		return description;
+	}public String getAdmin() {
+		return admin;
 	}	
 }

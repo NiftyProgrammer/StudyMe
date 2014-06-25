@@ -15,7 +15,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:hint="@string/create_group_activity_str"
-        android:inputType="textPersonName" >
+        android:inputType="textPersonName|textCapWords" >
 
         <requestFocus />
     </EditText>
@@ -27,7 +27,8 @@
         android:layout_alignLeft="@+id/create_group_activity_text"
         android:layout_below="@+id/create_group_activity_text"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
-        android:hint="@string/create_group_course_str" />
+        android:hint="@string/create_group_course_str"
+        android:inputType="textPersonName|textCapWords" />
 
     <EditText
         android:id="@+id/create_group_desc"

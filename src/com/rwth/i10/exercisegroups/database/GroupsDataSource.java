@@ -1,5 +1,7 @@
 package com.rwth.i10.exercisegroups.database;
 
+import java.io.ByteArrayOutputStream;
+
 import com.rwth.i10.exercisegroups.Util.GroupData;
 import com.rwth.i10.exercisegroups.Util.UserData;
 
@@ -8,13 +10,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.Log;
 
 public class GroupsDataSource {
 
 	private SQLiteHelper dbHelper;
-	private SQLiteDatabase writableDatabase, readableDatabase;
+	private SQLiteDatabase writeDatabase, readDatabase;
 	private String[] allColumns = {SQLiteHelper.TABLE_ID, SQLiteHelper.TABLE_AVTIVITY,
 			SQLiteHelper.TABLE_COURSE, SQLiteHelper.TABLE_ADDRESS, SQLiteHelper.TABLE_STATUS,
 			SQLiteHelper.TABLE_MAX_PART, SQLiteHelper.TABLE_LAT, SQLiteHelper.TABLE_LNG, 
@@ -30,13 +33,14 @@ public class GroupsDataSource {
 	}
 	
 	public void open() throws SQLException{
-		writableDatabase = dbHelper.getWritableDatabase();
-		readableDatabase = dbHelper.getReadableDatabase();
+		writeDatabase = dbHelper.getWritableDatabase();
+		readDatabase = dbHelper.getReadableDatabase();
 	}
 	
 	public void close(){
-		dbHelper.close();
-		writableDatabase.close();
+		readDatabase.close();
+		writeDatabase.close();
+		dbHelper.close();		
 	}
 	
 	public boolean createGroup(GroupData group){
@@ -53,18 +57,19 @@ public class GroupsDataSource {
 				+ " - " + group.getCourse() + " - " + group.getAddress()
 				+ " - " + group.getStatus() + " - " + group.getMaxNumber()
 				+ " - " + group.getLat() + " - " + group.getLng());
-		/*
-		if(group.getImage() != null)
-			contValues.put(allColumns[8], group.getImage().getNinePatchChunk());
-		else
-			contValues.put(allColumns[8], new byte[]{});*/
+		
+		if(group.getImage() != null){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();  
+			group.getImage().compress(Bitmap.CompressFormat.JPEG, 100, baos);
+			contValues.put(allColumns[8], baos.toByteArray());
+		}
 		long value = 0;
 		try {
-			value = writableDatabase.insertOrThrow(SQLiteHelper.TABLE_CREATE, null, contValues);
+			value = writeDatabase.insertOrThrow(SQLiteHelper.TABLE_CREATE, null, contValues);
 			return true;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			value = writableDatabase.update(SQLiteHelper.TABLE_CREATE, contValues, allColumns[0] + " = ?", new String[]{group.getGroup_id()});
+			value = writeDatabase.update(SQLiteHelper.TABLE_CREATE, contValues, allColumns[0] + " = ?", new String[]{group.getGroup_id()});
 		}
 		if(value > 0)
 			return true;
@@ -73,18 +78,24 @@ public class GroupsDataSource {
 	}
 		
 	public Cursor getAllStartGroups(){
-		return readableDatabase.query(SQLiteHelper.TABLE_CREATE, allColumns, SQLiteHelper.TABLE_STATUS + " = ?", 
+		Cursor cursor = readDatabase.query(SQLiteHelper.TABLE_CREATE, allColumns, SQLiteHelper.TABLE_STATUS + " = ?", 
 				new String[]{"START"}, null, null, null);
+		if(cursor == null || cursor.isAfterLast())
+			cursor = readDatabase.rawQuery("SELECT * FROM " + SQLiteHelper.TABLE_CREATE
+		+ " WHERE " + SQLiteHelper.TABLE_STATUS + "=?", new String[]{"START"});
+		return cursor;
 	}
 	public Cursor getAllGroups(){
-		return readableDatabase.query(SQLiteHelper.TABLE_CREATE, allColumns, null, null, null, null, null);
-	}
-	
+		Cursor cursor = readDatabase.query(SQLiteHelper.TABLE_CREATE, allColumns, null, null, null, null, null); 
+		if(cursor == null || cursor.isAfterLast())
+			cursor = readDatabase.rawQuery("SELECT * FROM " + SQLiteHelper.TABLE_CREATE, null);
+		return cursor;
+	}	
 	public int deleteGroup(String id){
-		return writableDatabase.delete(SQLiteHelper.TABLE_CREATE, allColumns[0] + " = ?", new String[]{id});
+		return writeDatabase.delete(SQLiteHelper.TABLE_CREATE, allColumns[0] + " = ?", new String[]{id});
 	}
 	public int deleteGroup(GroupData group){
-		return writableDatabase.delete(SQLiteHelper.TABLE_CREATE, allColumns[0] + " = ?, " +
+		return writeDatabase.delete(SQLiteHelper.TABLE_CREATE, allColumns[0] + " = ?, " +
 				allColumns[1] + " = ?, " + allColumns[2] + " = ?", new String[]{group.getGroup_id(),
 				group.getName(), group.getCourse()});
 	}
@@ -104,11 +115,11 @@ public class GroupsDataSource {
 			contValues.put(allColumns[8], new byte[]{});*/
 		long value = 0;
 		try {
-			value = writableDatabase.insertOrThrow(SQLiteHelper.UTABLE_CREATE, null, contValues);
+			value = writeDatabase.insertOrThrow(SQLiteHelper.UTABLE_CREATE, null, contValues);
 			return true;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			value = writableDatabase.update(SQLiteHelper.UTABLE_CREATE, contValues, allColumns[0] + " = ?", new String[]{data.getUsername()});
+			value = writeDatabase.update(SQLiteHelper.UTABLE_CREATE, contValues, allColumns[0] + " = ?", new String[]{data.getUsername()});
 		}
 		if(value > 0)
 			return true;
@@ -129,7 +140,7 @@ public class GroupsDataSource {
 			selectionArgs = username;
 		}
 		
-		Cursor cursor = readableDatabase.query(SQLiteHelper.UTABLE_CREATE, userAllColumns, selection + " = ?", new String[]{selectionArgs}, null, null, null);
+		Cursor cursor = readDatabase.query(SQLiteHelper.UTABLE_CREATE, userAllColumns, selection + " = ?", new String[]{selectionArgs}, null, null, null);
 		
 		int index = 0;
 		while(cursor.moveToNext()){
