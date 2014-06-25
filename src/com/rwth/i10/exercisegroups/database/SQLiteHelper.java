@@ -23,10 +23,15 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 								UTABLE_PUB = "is_public",
 								UTABLE_DNAME = "display_name",
 								UTABLE_EMAIL = "email",
-								UTABLE_DETAILS = "details";
+								UTABLE_DETAILS = "details",
+								UTABLE_STATUS = "status";
+	
+	public static final String GROUP_MSG_TABLE = "GroupMsgs",
+								GROUP_MSG_ID = "id",
+								GROUP_MSG_MSGs = "msgs";
 	
 	private static final String DATABASE_NAME = "groups.db";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 2;
 	
 	private static final String DATABASE_CREATE = "create table "
 			+ TABLE_CREATE + "(" + TABLE_ID + " text primary key, "
@@ -45,7 +50,12 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 			+ UTABLE_PUB + " int not null, "
 			+ UTABLE_DNAME + " text, "
 			+ UTABLE_EMAIL + " text, "
-			+ UTABLE_DETAILS + " text);";
+			+ UTABLE_DETAILS + " text, " 
+			+ UTABLE_STATUS + " text);";
+	
+	private static final String GROUP_MSG_CREATE_TABLE = "create table "
+			+ GROUP_MSG_TABLE + " (" + GROUP_MSG_ID + " text primary key, "
+			+ GROUP_MSG_MSGs + " text);";
 	
 	public SQLiteHelper(Context context) {
 		// TODO Auto-generated constructor stub
@@ -57,6 +67,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 		// TODO Auto-generated method stub
 		database.execSQL(DATABASE_CREATE);
 		database.execSQL(USER_CREATE_TABLE);
+		database.execSQL(GROUP_MSG_CREATE_TABLE);
 	}
 
 	@Override
@@ -64,6 +75,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 		// TODO Auto-generated method stub
 		database.execSQL("DROP TABLE IF EXISTS " + TABLE_CREATE);
 		database.execSQL("DROP TABLE IF EXISTS " + USER_CREATE_TABLE);
+		database.execSQL("DROP TABLE IF EXISTS " + GROUP_MSG_CREATE_TABLE);
 		onCreate(database);
 	}
 

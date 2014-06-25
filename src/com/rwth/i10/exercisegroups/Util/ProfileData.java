@@ -3,7 +3,7 @@ package com.rwth.i10.exercisegroups.Util;
 public class ProfileData {
 
 	
-	private String username, displayName, msg_id, session, email, desc;
+	private String username, displayName, msg_id, session, email, desc, status;
 	private int event_id;
 	private boolean publicProfile;
 	
@@ -11,6 +11,14 @@ public class ProfileData {
 		// TODO Auto-generated constructor stub
 	}
 	
+	public ProfileData(String username, String session, String email,
+			String desc, String displayName, String status, boolean isPublic) {
+		// TODO Auto-generated constructor stub
+		this.username = username; this.session = session; this.email = email;
+		this.desc = desc; this.displayName = displayName; this.status = status;
+		this.publicProfile = isPublic;
+	}
+
 	public void setUsername(String username) {
 		this.username = username;
 	}public void setMsg_id(String msg_id) {
@@ -27,6 +35,8 @@ public class ProfileData {
 		this.desc = desc;
 	}public void setPublicProfile(boolean publicProfile) {
 		this.publicProfile = publicProfile;
+	}public void setStatus(String status) {
+		this.status = status;
 	}
 	
 	public String getUsername() {
@@ -45,6 +55,8 @@ public class ProfileData {
 		return desc;
 	}public boolean isPublicProfile() {
 		return publicProfile;
+	}public String getStatus() {
+		return status;
 	}
 	
 	

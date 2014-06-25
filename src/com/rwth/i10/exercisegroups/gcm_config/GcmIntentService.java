@@ -1,5 +1,9 @@
 package com.rwth.i10.exercisegroups.gcm_config;
 
+import java.util.List;
+
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -12,8 +16,10 @@ import android.util.Log;
 import com.google.android.gms.R;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.rwth.i10.exercisegroups.Activitys.MainActivity;
+import com.rwth.i10.exercisegroups.Util.Constants;
 import com.rwth.i10.exercisegroups.Util.MessageCategories;
 import com.rwth.i10.exercisegroups.Util.MessagesTypes;
+import com.rwth.i10.exercisegroups.Util.ProfileData;
 
 public class GcmIntentService extends IntentService {
 
@@ -55,6 +61,7 @@ public class GcmIntentService extends IntentService {
 			} else if (GoogleCloudMessaging.
 					MESSAGE_TYPE_MESSAGE.equals(messageType)) {
 				// Post notification of received message.
+				//if(!isActivityRunning())
 				sendNotification("Received: " + extras.toString());
 
 				Log.i("Message", "Received: " + extras.toString());
@@ -76,6 +83,17 @@ public class GcmIntentService extends IntentService {
 					break;
 				}
 
+				case GROUP_JOIN_REQUEST:
+				{
+					String msg = extras.getString(MessageCategories.MESSAGE.toString());
+					String []values = msg.split(Constants.KEY_SEPRATOR);
+					ProfileData data = new ProfileData();
+					data.setUsername(values[0].split(Constants.VALUE_SEPRATOR)[1]);
+					data.setMsg_id(values[1].split(Constants.VALUE_SEPRATOR)[1]);
+					MainActivity.addUserRequest(data);
+					break;
+				}
+				
 				default:
 				{
 					MainActivity.fetschGroups();
@@ -87,6 +105,18 @@ public class GcmIntentService extends IntentService {
 		}
 		// Release the wake lock provided by the WakefulBroadcastReceiver.
 		GcmBroadcastReceiver.completeWakefulIntent(intent);
+	}
+
+	private boolean isActivityRunning(){
+		ActivityManager activityManager = (ActivityManager) this.getSystemService( ACTIVITY_SERVICE );
+		List<RunningAppProcessInfo> procInfos = activityManager.getRunningAppProcesses();
+		for(int i = 0; i < procInfos.size(); i++){
+			if(procInfos.get(i).processName.equals("com.rwth.i10.exercisegroups"))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void sendNotification(String msg) {

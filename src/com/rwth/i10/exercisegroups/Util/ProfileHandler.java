@@ -246,7 +246,7 @@ public class ProfileHandler implements MyContextData.Listener{
 	
 		totalPosts++;
 				
-		Event event = new Event("UPDATE", "RELEVANCE", (int)System.currentTimeMillis());
+		Event event = new Event("UPDATE", "PROFILE", (int)System.currentTimeMillis());
 		
 		event.addEntity( new Entity<String>("app", "study_me") );
 		event.addEntity( new Entity<String>("activity", "profile_data") );
@@ -302,7 +302,7 @@ public class ProfileHandler implements MyContextData.Listener{
 			event.put("model", "COMPLETE");
 			event.put("category", "ACTIVITY");
 			event.put("source", "MOBILE");
-			event.put("type", "RELEVANCE");
+			event.put("type", "PROFILE");
 			
 			JSONObject entity1 = new JSONObject();
 			JSONObject entity2 = new JSONObject();

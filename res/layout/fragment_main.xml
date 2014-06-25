@@ -13,7 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:shadowHeight="0dp"
-        android:gravity="bottom" >
+        android:gravity="bottom"
+        app:dragView="@+id/main_view_anchor_view" >
 
         <FrameLayout
             android:id="@+id/content_frame"

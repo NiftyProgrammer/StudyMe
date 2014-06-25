@@ -181,7 +181,7 @@ public class MainListViewAdapter extends BaseAdapter {
 				mContextData.post("events/update", json);
 				
 				MainActivity.fetschGroups();
-				MainActivity.sendMessage("", MessagesTypes.UPDATE_GROUPS);
+				MainActivity.sendMessage("", null, MessagesTypes.UPDATE_GROUPS);
 				
 				data.setStatus(action);
 				data.setLat(location.getLatitude());

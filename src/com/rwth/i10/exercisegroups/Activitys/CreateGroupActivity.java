@@ -39,7 +39,7 @@ public class CreateGroupActivity extends ActionBarActivity {
 
 	private Bitmap imageDrawable = null;
 	private Context context;
-	
+
 	private static final int CAMERA_REQUEST = 1888; 
 	private static final int GALLERY_REQUEST = 1999;
 
@@ -76,12 +76,14 @@ public class CreateGroupActivity extends ActionBarActivity {
 				item.setGroup_id(RandomString.randomString(20));
 				item.setDescription(desc.getText().toString());
 				item.setAdmin(MainActivity.regId);
-				
+
 				//compress image
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				imageDrawable.compress(Bitmap.CompressFormat.JPEG, 100, out);
-				Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
-				item.setImage(StaticUtilMethods.getRoundedShape(decoded));
+				if(imageDrawable != null){
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					imageDrawable.compress(Bitmap.CompressFormat.JPEG, 100, out);
+					Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+					item.setImage(StaticUtilMethods.getRoundedShape(decoded));
+				}
 				
 				MainActivity.groupListView.addItem(item);
 				MainActivity.databaseSourse.createGroup(item);
@@ -106,13 +108,13 @@ public class CreateGroupActivity extends ActionBarActivity {
 						switch(position){
 						case 0:
 							Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE); 
-			                startActivityForResult(cameraIntent, CAMERA_REQUEST); 
+							startActivityForResult(cameraIntent, CAMERA_REQUEST); 
 							break;
-							
+
 						case 1:
 							Intent intent = new Intent(Intent.ACTION_PICK);
-						    intent.setType("image/*");
-						    startActivityForResult(intent, GALLERY_REQUEST);
+							intent.setType("image/*");
+							startActivityForResult(intent, GALLERY_REQUEST);
 							break;
 						}
 					}
@@ -130,27 +132,27 @@ public class CreateGroupActivity extends ActionBarActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub
 		if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {  
-            imageDrawable = (Bitmap) data.getExtras().get("data"); 
-            image.setImageBitmap(imageDrawable);
-        }
+			imageDrawable = (Bitmap) data.getExtras().get("data"); 
+			image.setImageBitmap(imageDrawable);
+		}
 		else if(requestCode == GALLERY_REQUEST && resultCode == RESULT_OK){
 			Uri selectedImage = data.getData();
-            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+			String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-            Cursor cursor = getContentResolver().query(
-                               selectedImage, filePathColumn, null, null, null);
-            cursor.moveToFirst();
+			Cursor cursor = getContentResolver().query(
+					selectedImage, filePathColumn, null, null, null);
+			cursor.moveToFirst();
 
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String filePath = cursor.getString(columnIndex);
-            cursor.close();
+			int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+			String filePath = cursor.getString(columnIndex);
+			cursor.close();
 
 
-            imageDrawable = BitmapFactory.decodeFile(filePath);
-            image.setImageBitmap(imageDrawable);
+			imageDrawable = BitmapFactory.decodeFile(filePath);
+			image.setImageBitmap(imageDrawable);
 		}
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will

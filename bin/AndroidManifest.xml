@@ -41,7 +41,7 @@
             android:value="4452000" />
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyBFHqZxjz53IEzZCa2C5xgj43UTmfxZbTk" />
+            android:value="AIzaSyCDSwR9NaIusvN1CWfHivtvtsnJfWXoNv8" />
         <!-- AIzaSyCDSwR9NaIusvN1CWfHivtvtsnJfWXoNv8 -->
         <!-- AIzaSyBFHqZxjz53IEzZCa2C5xgj43UTmfxZbTk -->
         <receiver

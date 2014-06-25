@@ -1,13 +1,12 @@
 package com.rwth.i10.exercisegroups.Activitys;
 
 import java.io.IOException;
-import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Random;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -18,7 +17,6 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
@@ -26,15 +24,12 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.location.Address;
 import android.location.Criteria;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -48,12 +43,10 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -62,8 +55,6 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.internal.by;
-import com.google.android.gms.internal.cu;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -74,8 +65,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.rwth.i10.exercisegroups.R;
 import com.rwth.i10.exercisegroups.Adapters.MainListViewAdapter;
 import com.rwth.i10.exercisegroups.Util.Constants;
@@ -92,11 +81,6 @@ import com.rwth.i10.exercisegroups.database.GroupsDataSource;
 import com.rwth.i10.exercisegroups.database.SQLiteHelper;
 import com.rwth.i10.exercisegroups.gcm_config.GcmServer;
 import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
-
-import de.contextdata.ContextData;
-import de.contextdata.Entity;
-import de.contextdata.Event;
-import de.contextdata.RandomString;
 
 public class MainActivity extends ActionBarActivity implements MyContextData.Listener,
 LocationListener, View.OnClickListener{
@@ -123,7 +107,7 @@ LocationListener, View.OnClickListener{
 	private static String allGroupsString;
 
 
-	private static boolean isDelete;
+	private static GetRequest getRequest;
 	private static ActionBarDrawerToggle mActionBarDrawerToggle;
 	private static DrawerLayout mDrawerLayout;
 	private static View LeftDrawer;
@@ -134,7 +118,7 @@ LocationListener, View.OnClickListener{
 
 	private LocationManager mLocationManager = null;
 	private PlaceholderFragment mFragment;
-	
+
 	private static String 	mUsername,
 	mPassword;
 
@@ -199,9 +183,9 @@ LocationListener, View.OnClickListener{
 			databaseSourse.close();
 			super.onBackPressed();
 		}
-			//return;
+		//return;
 	}
-	
+
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
@@ -295,11 +279,11 @@ LocationListener, View.OnClickListener{
 	private void init(boolean firstLogin){
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
-		
+
 		databaseSourse = new GroupsDataSource(context);
 		databaseSourse.open();
 
-		closeApplication = isDelete = false;
+		closeApplication = false;
 
 
 		String []credentials = StaticUtilMethods.getUserCredentials(context);
@@ -408,7 +392,7 @@ LocationListener, View.OnClickListener{
 			private Cursor cursor = null;
 			protected void onPreExecute() {
 			}
-			
+
 			@Override
 			protected ArrayList<GroupData> doInBackground(Void... params) {
 				// TODO Auto-generated method stub
@@ -441,43 +425,55 @@ LocationListener, View.OnClickListener{
 		}.execute();
 	}
 
+
+	private static void sendMessageToServer(Map<String, String> params, List<String> ids, MessagesTypes type){
+		GcmServer server = new GcmServer();
+		server.sendMessage(params, ids, type, context);
+	}
+
 	public static void deleteGroupFromServer(String id){
-		isDelete = true;
+		getRequest = GetRequest.DELETE_GROUP_REQUEST;
 
 		JSONObject data = new JSONObject();
-		
+
 		try {
 			data.put("model", "COMPLETE");
 			data.put("category", "ACTIVITY");
 			data.put("source", "MOBILE");
 			data.put("type", "ANNOUNCEMENT");
-			
+
 			JSONObject entity1 = new JSONObject();
 			entity1.put("key", "group_id");
 			entity1.put("value", id);
 			JSONArray entities = new JSONArray();
 			entities.put(entity1);
-			
+
 			data.put("entities", entities);			
 		} catch (Exception e) {}
-		
-		
+
+
 		serverHandler.get("events/show", data.toString());
-		
+
 	}
 
 	public static void fetschGroups(){
+		getRequest = GetRequest.GROUP_REQUEST;
 		serverHandler.get("events/show", StaticUtilMethods.createFetchServerJSON());
 	}
-	public static void sendMessage(String message, final MessagesTypes type){
+	public static void sendMessage(String message, String []ids, final MessagesTypes type){
 
 		final HashMap<String, String> params = new HashMap<String, String>();
 		params.put(MessageCategories.MESSAGE.toString(), message);
 
+		if(ids != null){
+			sendMessageToServer(params, Arrays.asList(ids), type);
+			return;
+		}
+
 		JSONObject retrive = new JSONObject();
 		try {
 			retrive.put("model", "COMPLETE");
-			retrive.put("type", "RELEVANCE");
+			retrive.put("type", "PROFILE");
 
 			JSONObject entity1 = new JSONObject();
 			entity1.put("key", "app");
@@ -530,9 +526,7 @@ LocationListener, View.OnClickListener{
 									ids.add(msgId);
 								}
 							}
-
-							GcmServer server = new GcmServer();
-							server.sendMessage(params, ids, type, context);
+							sendMessageToServer(params, ids, type);							
 						}
 					}
 
@@ -572,12 +566,12 @@ LocationListener, View.OnClickListener{
 			}
 		}.execute();
 	}
-	
+
 
 	private void setFilteredGroups(ArrayList<JSONObject> array){
 		SetMarkers marks = new SetMarkers();
 		if(array == null || array.isEmpty()){
-			Toast.makeText(context, "No group found", Toast.LENGTH_SHORT);
+			Toast.makeText(context, "No group found", Toast.LENGTH_SHORT).show();
 			return;
 		}
 		for(int i=0; i<array.size(); i++)
@@ -585,6 +579,49 @@ LocationListener, View.OnClickListener{
 		marks.onPostExecute(null);
 	}
 
+
+	public static void addUserRequest(ProfileData data){
+		JSONObject event = new JSONObject();
+		try {
+			event.put("model", "COMPLETE");
+			event.put("category", "ACTIVITY");
+			event.put("source", "MOBILE");
+			event.put("type", "PROFILE");
+
+			JSONObject entity1 = new JSONObject();
+			JSONObject entity2 = new JSONObject();
+			JSONObject entity3 = new JSONObject();
+
+			entity1.put("key", "app");
+			entity1.put("value", "study_me");
+
+			entity2.put("key", "activity");
+			entity2.put("value", "profile_data");
+
+			entity3.put("key", ProfileData.PROFILE_USERNAME);
+			entity3.put("value", data.getUsername());
+
+			JSONArray array = new JSONArray();
+			array.put(entity1);
+			array.put(entity2);
+			array.put(entity3);
+
+			event.put("entities", array);
+
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		getRequest = GetRequest.USER_PROFILE_REQUEST;
+		serverHandler.get("event/show", event.toString());
+
+	}
+
+	public static void addGroupMessage(GroupData data, String msg){
+		
+	}
+	
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
@@ -602,8 +639,8 @@ LocationListener, View.OnClickListener{
 			filterView = (TextView)rootView.findViewById(R.id.left_drawer_filter);
 			slidingLayout = rootView.findViewById(R.id.sliding_up_panal);
 			slidingPanel = (SlidingUpPanelLayout)rootView.findViewById(R.id.left_drawer_sliding_up_panel);
-			
-			
+
+
 			//setting nevigation drawer
 			mDrawerLayout = (DrawerLayout)rootView.findViewById(R.id.drawer_layout);
 			mActionBarDrawerToggle = 
@@ -670,17 +707,17 @@ LocationListener, View.OnClickListener{
 			//slidingPanel.collapsePanel();
 			slidingPanel.setPanelHeight(0);
 			slidingPanel.hidePanel();
-			slidingPanel.setVerticalScrollBarEnabled(true);
+			slidingPanel.setEnableDragViewTouchEvents(true);
 			//slidingPanel.setSlidingEnabled(false);
 			slidingLayout.setVisibility(View.GONE);
 			slidingPanel.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
-				
+
 				@Override
 				public void onPanelSlide(View panel, float slideOffset) {
 					// TODO Auto-generated method stub
-					
+
 				}
-				
+
 				@Override
 				public void onPanelExpanded(View panel) {
 					// TODO Auto-generated method stub
@@ -688,16 +725,16 @@ LocationListener, View.OnClickListener{
 						return;
 					LatLngBounds.Builder builder = new LatLngBounds.Builder();
 					for (Marker marker : allMarkers.keySet()) {
-					    builder.include(marker.getPosition());
+						builder.include(marker.getPosition());
 					}
 					LatLngBounds bounds = builder.build();
 					int padding = 0; // offset from edges of the map in pixels
 					CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-					
+
 					map.moveCamera(cu);
 					map.animateCamera(cu);
 				}
-				
+
 				@Override
 				public void onPanelCollapsed(View panel) {
 					// TODO Auto-generated method stub
@@ -706,16 +743,15 @@ LocationListener, View.OnClickListener{
 					slidingPanel.hidePanel();
 					//slidingPanel.setSlidingEnabled(false);
 				}
-				
+
 				@Override
 				public void onPanelAnchored(View panel) {
 					// TODO Auto-generated method stub
-					
+
 				}
 			});
-			slidingPanel.setEnableDragViewTouchEvents(true);
-			
-			
+
+
 			/* MapFragment fragment =  (MapFragment)MapFragment.instantiate(context, "com.google.android.gms.maps.MapFragment");
             map = fragment.getMap();
 
@@ -730,9 +766,9 @@ LocationListener, View.OnClickListener{
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		int id = v.getId();
-		
+
 		switch(id){
-		
+
 		case R.id.left_drawer_filter_btn:
 			mDrawerLayout.closeDrawer(LeftDrawer);
 			String getString = filterView.getText().toString();
@@ -762,7 +798,7 @@ LocationListener, View.OnClickListener{
 							}
 						}
 					}
-					
+
 					setFilteredGroups(sendObject);
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -773,29 +809,79 @@ LocationListener, View.OnClickListener{
 				new SetMarkers().execute(allGroupsString);
 			}
 			break;
-		
+
 		}
 	}
-	
+
 	@Override
 	public void onGETResult(String result) {
 		// TODO Auto-generated method stub
-		if(isDelete){
-			isDelete = false;
+
+		switch(getRequest){
+
+		case DELETE_GROUP_REQUEST:
+		{
 			try {
 				JSONObject data = new JSONObject(result);
 				JSONArray events = data.getJSONArray("events");
 				for(int i=0; i<events.length(); i++){
 					JSONObject event = events.optJSONObject(i);
 					if(event != null)
-					serverHandler.post("events/delete", new JSONObject().put("id", event.optString("id")).toString());
+						serverHandler.post("events/delete", new JSONObject().put("id", event.optString("id")).toString());
 				}
-			} catch (JSONException e) {}			
+			} catch (JSONException e) {}
+			break;
 		}
-		else{
+
+		case GROUP_REQUEST:
+		{
 			allGroupsString = result;
 			new SetMarkers().execute(result);
+			break;
 		}
+
+		case USER_PROFILE_REQUEST:
+		{
+			try {
+				JSONObject data = new JSONObject(result);
+
+				ProfileData tempData = new ProfileData();
+				JSONArray events = data.optJSONArray("events");
+				if(events != null){
+					for(int i=0; i<events.length(); i++){
+						JSONObject event = events.optJSONObject(i);
+						JSONArray entities = event.optJSONArray("entities");
+						for(int j=0; j<entities.length(); j++){
+							JSONObject obj = entities.optJSONObject(j);
+							if(ProfileData.PROFILE_USERNAME.equalsIgnoreCase(obj.optString( "key" )))
+								tempData.setUsername(obj.optString("value"));
+							if(ProfileData.PROFILE_MSG_ID.equalsIgnoreCase(obj.optString( "key" )))
+								tempData.setMsg_id(obj.optString("value"));
+							if(ProfileData.PROFILE_DISPLAY_NAME.equalsIgnoreCase(obj.optString( "key" )))
+								tempData.setDisplayName(obj.optString("value"));
+							if(ProfileData.PROFILE_EMAIL.equalsIgnoreCase(obj.optString( "key" )))
+								tempData.setEmail(obj.optString("value"));
+							if(ProfileData.PROFILE_DESC.equalsIgnoreCase(obj.optString( "key" )))
+								tempData.setDesc(obj.optString("value"));
+							try {
+								if(ProfileData.PROFILE_PUBLIC.equalsIgnoreCase(obj.optString( "key" )))
+									tempData.setPublicProfile(Boolean.parseBoolean(obj.getString("value")));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								tempData.setPublicProfile(false);
+							}						
+						}
+						databaseSourse.createUser(tempData);
+					}
+				}
+			} catch (JSONException e) {}
+			break;
+		}
+
+		}
+
+
+		getRequest = null;
 	}
 
 
@@ -816,22 +902,22 @@ LocationListener, View.OnClickListener{
 			}
 			setProgressBarIndeterminateVisibility(true);
 		}
-		
+
 		private boolean isWithinDistance(double groupLat, double groupLng){
 			double latDistance = Math.toRadians(mLocation.getLatitude() - groupLat);
-            double lngDistance = Math.toRadians(mLocation.getLongitude() - groupLng);
-            double a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2)) +
-                            (Math.cos(Math.toRadians(mLocation.getLatitude()))) *
-                            (Math.cos(Math.toRadians(groupLat))) *
-                            (Math.sin(lngDistance / 2)) *
-                            (Math.sin(lngDistance / 2));
+			double lngDistance = Math.toRadians(mLocation.getLongitude() - groupLng);
+			double a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2)) +
+					(Math.cos(Math.toRadians(mLocation.getLatitude()))) *
+					(Math.cos(Math.toRadians(groupLat))) *
+					(Math.sin(lngDistance / 2)) *
+					(Math.sin(lngDistance / 2));
 
-            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+			double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-            double dist = 6371 * c;             
-            return dist < 50;
+			double dist = 6371 * c;             
+			return dist < 50;
 		}
-		
+
 		@Override
 		protected Void doInBackground(String... params) {
 			// TODO Auto-generated method stub
@@ -870,14 +956,14 @@ LocationListener, View.OnClickListener{
 									lng = entity.optDouble("value");
 							}
 						}
-						
+
 						if(isWithinDistance(lat, lng)){
 							if(eve.optString("action").equalsIgnoreCase("START"))
 								groups.put(groupId, eve);
 							else
 								endedGroups.add(groupId);
 						}
-						
+
 					}					
 				}
 
@@ -893,7 +979,7 @@ LocationListener, View.OnClickListener{
 
 			return null;
 		}
-		
+
 		@Override
 		protected void onProgressUpdate(JSONObject... values) {
 			// TODO Auto-generated method stub
@@ -948,40 +1034,40 @@ LocationListener, View.OnClickListener{
 				.title(data.getName())
 				.snippet(data.getCourse())
 				.position(position);
-				
+
 				Marker mark = map.addMarker(marker);
 				allMarkers.put(mark, data);
-				
+
 			}
 		}
-		
-		
+
+
 		@Override
 		protected void onPostExecute(Void result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 			setProgressBarIndeterminateVisibility(false);
-			
+
 			if(allMarkers.isEmpty())
 				return;
 			LatLngBounds.Builder builder = new LatLngBounds.Builder();
 			for (Marker marker : allMarkers.keySet()) {
-			    builder.include(marker.getPosition());
+				builder.include(marker.getPosition());
 			}
 			LatLngBounds bounds = builder.build();
 			int padding = 50; // offset from edges of the map in pixels
 			CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-			
+
 			map.moveCamera(cu);
 			map.animateCamera(cu);
-			
-			
+
+
 			map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-				
+
 				@Override
 				public void onInfoWindowClick(Marker marker) {
 					// TODO Auto-generated method stub
-					GroupData data = allMarkers.get(marker);
+					final GroupData data = allMarkers.get(marker);
 					((TextView)slidingLayout.findViewById(R.id.main_view_group_name)).setText(data.getName());
 					((TextView)slidingLayout.findViewById(R.id.main_view_group_address)).setText(Html.fromHtml(data.getAddress()));
 					((TextView)slidingLayout.findViewById(R.id.main_view_group_course)).setText(data.getCourse());
@@ -994,30 +1080,54 @@ LocationListener, View.OnClickListener{
 					}
 					((ImageView)slidingLayout.findViewById(R.id.main_view_group_img)).setImageBitmap(
 							StaticUtilMethods.getRoundedShape(image));
+
+					Button join = (Button) slidingLayout.findViewById(R.id.main_view_join_btn);
+					if(mUsername.equalsIgnoreCase(data.getName()))
+						join.setEnabled(false);
+					else{
+						join.setEnabled(true);
+						join.setOnClickListener(new View.OnClickListener() {
+
+							@Override
+							public void onClick(View v) {
+								// TODO Auto-generated method stub
+								if(!regId.equalsIgnoreCase(data.getAdmin()) && !mUsername.equalsIgnoreCase(data.getName()))
+									sendMessage("username" + Constants.VALUE_SEPRATOR 
+											+ mUsername + Constants.KEY_SEPRATOR +
+											"msgId" + Constants.VALUE_SEPRATOR +
+											regId,
+											new String[]{data.getAdmin()},
+											MessagesTypes.GROUP_JOIN_REQUEST);
+							}
+						});
+					}
 					
-					((Button)slidingLayout.findViewById(R.id.main_view_join_btn)).setOnClickListener(new View.OnClickListener() {
+					((Button)slidingLayout.findViewById(R.id.main_view_message_send_btn)).setOnClickListener(new View.OnClickListener() {
 						
 						@Override
-						public void onClick(View v) {
+						public void onClick(View arg0) {
 							// TODO Auto-generated method stub
-							sendMessage("username" + Constants.VALUE_SEPRATOR 
-									+ mUsername + Constants.KEY_SEPRATOR +
-									"msgId" + Constants.VALUE_SEPRATOR +
-									regId, MessagesTypes.GROUP_JOIN_REQUEST);
+							// send messages
 						}
 					});
-					
+
 					slidingLayout.setVisibility(View.VISIBLE);
 					//slidingPanel.setSlidingEnabled(true);
 					if(slidingPanel.isPanelAnchored() || slidingPanel.isPanelExpanded() || 
 							!slidingPanel.isPanelHidden())
 						slidingPanel.showPanel();
+
+					slidingPanel.setAnchorPoint(0.7f);
 					slidingPanel.expandPanel(0.7f);
 				}
 			});
 			//map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 13));
 		}
 
+	}
+
+	private enum GetRequest{
+		GROUP_REQUEST, USER_PROFILE_REQUEST, DELETE_GROUP_REQUEST;
 	}
 
 }
