@@ -83,7 +83,7 @@ public class GcmServer {
         }
         body += "&restricted_package_name=com.rwth.i10.exercisegroups";
         
-        if(type != MessagesTypes.RECEIVE_MESSAGE)
+        if(type == MessagesTypes.UPDATE_GROUPS)
         body += "&collapse_key=" + String.valueOf(type.ordinal());
 
         byte[] bytes = body.getBytes();

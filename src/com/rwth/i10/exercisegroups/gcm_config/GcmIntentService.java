@@ -66,8 +66,11 @@ public class GcmIntentService extends IntentService {
 
 				Log.i("Message", "Received: " + extras.toString());
 
-				int msgType = Integer.parseInt(
-						extras.getString(MessageCategories.TYPE.getString()));
+				int msgType = 0;
+				try {
+					msgType = Integer.parseInt(
+							extras.getString(MessageCategories.TYPE.getString()));
+				} catch (NumberFormatException e) {}
 				MessagesTypes type = MessagesTypes.convert(msgType);
 
 				switch(type){
@@ -86,11 +89,13 @@ public class GcmIntentService extends IntentService {
 				case GROUP_JOIN_REQUEST:
 				{
 					String msg = extras.getString(MessageCategories.MESSAGE.toString());
+					Log.d("msg", msg);
 					String []values = msg.split(Constants.KEY_SEPRATOR);
+					Log.d("values", values[0] + "");
 					ProfileData data = new ProfileData();
 					data.setUsername(values[0].split(Constants.VALUE_SEPRATOR)[1]);
 					data.setMsg_id(values[1].split(Constants.VALUE_SEPRATOR)[1]);
-					MainActivity.addUserRequest(data);
+					//MainActivity.addUserRequest(data);
 					break;
 				}
 				

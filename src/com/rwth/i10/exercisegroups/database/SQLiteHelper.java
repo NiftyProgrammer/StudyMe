@@ -74,8 +74,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 	public void onUpgrade(SQLiteDatabase database, int arg1, int arg2) {
 		// TODO Auto-generated method stub
 		database.execSQL("DROP TABLE IF EXISTS " + TABLE_CREATE);
-		database.execSQL("DROP TABLE IF EXISTS " + USER_CREATE_TABLE);
-		database.execSQL("DROP TABLE IF EXISTS " + GROUP_MSG_CREATE_TABLE);
+		database.execSQL("DROP TABLE IF EXISTS " + UTABLE_CREATE);
+		database.execSQL("DROP TABLE IF EXISTS " + GROUP_MSG_TABLE);
 		onCreate(database);
 	}
 

@@ -464,6 +464,7 @@ LocationListener, View.OnClickListener{
 
 		final HashMap<String, String> params = new HashMap<String, String>();
 		params.put(MessageCategories.MESSAGE.toString(), message);
+		params.put(MessageCategories.TYPE.getString(), String.valueOf(type.ordinal()));
 
 		if(ids != null){
 			sendMessageToServer(params, Arrays.asList(ids), type);
@@ -1072,7 +1073,7 @@ LocationListener, View.OnClickListener{
 					((TextView)slidingLayout.findViewById(R.id.main_view_group_address)).setText(Html.fromHtml(data.getAddress()));
 					((TextView)slidingLayout.findViewById(R.id.main_view_group_course)).setText(data.getCourse());
 					((TextView)slidingLayout.findViewById(R.id.main_view_group_date)).setText( StaticUtilMethods.getDate( data.getTimestamp() ) );
-					((TextView)slidingLayout.findViewById(R.id.main_view_group_desc)).setText( data.getDescription() + "sdofk osdsdokfpsdokfposdkfposdkfposkdpfokdfpk pdsofk psdkofpodkfpo sakdpfokspdo fkpokdsfp oaksdfpok aspdofkspokf pdsokf poskdfpdskof psokdspkof dposkfd spokfd poskf aposkdpo kdsfposkd pofkspodk fpodskf poskdf poksdpofkspodfkpsodkfpsodkfposkdf podsk paokdpo skd fpoksfpok pdskof psdokfpaokdfpoakdspofksdpofks dpokf pok podsk fpodk pdoskspodkfpdokfpods kpok " );
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_desc)).setText( data.getDescription() );
 
 					Bitmap image = data.getImage();
 					if(data.getImage() == null){
@@ -1082,20 +1083,20 @@ LocationListener, View.OnClickListener{
 							StaticUtilMethods.getRoundedShape(image));
 
 					Button join = (Button) slidingLayout.findViewById(R.id.main_view_join_btn);
-					if(mUsername.equalsIgnoreCase(data.getName()))
-						join.setEnabled(false);
+					if(regId.equalsIgnoreCase(data.getAdmin()))
+						join.setVisibility(View.GONE);
 					else{
-						join.setEnabled(true);
+						join.setVisibility(View.VISIBLE);
 						join.setOnClickListener(new View.OnClickListener() {
 
 							@Override
 							public void onClick(View v) {
 								// TODO Auto-generated method stub
-								if(!regId.equalsIgnoreCase(data.getAdmin()) && !mUsername.equalsIgnoreCase(data.getName()))
-									sendMessage("username" + Constants.VALUE_SEPRATOR 
+								if(!regId.equalsIgnoreCase(data.getAdmin()))
+									sendMessage(new String("username" + Constants.VALUE_SEPRATOR 
 											+ mUsername + Constants.KEY_SEPRATOR +
 											"msgId" + Constants.VALUE_SEPRATOR +
-											regId,
+											regId),
 											new String[]{data.getAdmin()},
 											MessagesTypes.GROUP_JOIN_REQUEST);
 							}
