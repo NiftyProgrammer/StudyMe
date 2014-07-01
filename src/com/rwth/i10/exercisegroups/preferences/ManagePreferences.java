@@ -44,7 +44,7 @@ public class ManagePreferences {
 	}
 		
 	public boolean putStringPreferences(String key, String value){
-		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();		
+		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 		editor.putString(key, value);		
 		return editor.commit();
 	}
@@ -57,6 +57,18 @@ public class ManagePreferences {
 	public boolean putBoolPreferences(String key, boolean value){
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();		
 		editor.putBoolean(key, value);		
+		return editor.commit();
+	}
+	
+	public boolean removePreferences(String key){
+		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();		
+		editor.remove(key);		
+		return editor.commit();
+	}
+	public boolean removePreferences(String ...values){
+		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+		for(int i=0; i<values.length; i++)
+			editor.remove(values[i]);		
 		return editor.commit();
 	}
 	

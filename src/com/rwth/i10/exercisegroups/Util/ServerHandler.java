@@ -4,14 +4,14 @@ import de.contextdata.ContextData;
 
 public class ServerHandler {
 
-	private static ContextData contextData;
+	private static MyContextData contextData;
 	
 	public ServerHandler(String mUsername, String mPassword){
-		contextData = new ContextData("http://api.learning-context.de/", 3, mUsername, mPassword, 23, 
+		contextData = new MyContextData("http://api.learning-context.de/", 3, mUsername, mPassword, 23, 
 				"pcawfzywxcuztk2rbpl58vnts0rzv0mq1bsk9kqk75a52wafph");
 	}
 	
-	public ServerHandler(ContextData contextData){
+	public ServerHandler(MyContextData contextData){
 		this.contextData = contextData;
 	}
 	
@@ -23,14 +23,16 @@ public class ServerHandler {
 		return new MyContextData("http://api.learning-context.de/", 3, mUsername, mPassword, 23, 
 				"pcawfzywxcuztk2rbpl58vnts0rzv0mq1bsk9kqk75a52wafph");
 	}	
-	
-	public void setGETListener(ContextData.Listener listener){
+	public static void setTimeout(int timeout){
+		contextData.setTimeout(timeout);
+	}
+	public void setGETListener(MyContextData.Listener listener){
 		contextData.registerGETListener(listener);
 	}
-	public void setPOSTListener(ContextData.Listener listener){
+	public void setPOSTListener(MyContextData.Listener listener){
 		contextData.registerPOSTListener(listener);
 	}
-	public static void setListener(ContextData.Listener listener){
+	public static void setListener(MyContextData.Listener listener){
 		contextData.registerGETListener(listener);
 		contextData.registerPOSTListener(listener);
 	}
@@ -42,7 +44,7 @@ public class ServerHandler {
 		contextData.post(event, json);
 	}
 	
-	public static ContextData getContextData(){
+	public static MyContextData getContextData(){
 		return contextData;
 	}
 }

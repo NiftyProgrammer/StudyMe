@@ -10,17 +10,27 @@ import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
 
 import de.contextdata.ContextData;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,12 +40,16 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 	private Context _context = null;
 	private ProfileData _newData;
 	private ProfileHandler _mProfileHandler;
+	private Bitmap _imageDrawable = null;
 
+	private static final int CAMERA_REQUEST = 1888; 
+	private static final int GALLERY_REQUEST = 1999;
 
 	private MyAsyncTask sendTask;
 	private TextView _displayName, _email, _description;
 	private View _progressLayout;
 	private ScrollView _mainView;
+	private ImageView _imgView;
 	private ManagePreferences pref;
 	private boolean sendData;
 
@@ -67,39 +81,101 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		
-		pref = null;
-		pref = new ManagePreferences(_context);
-		_progressLayout.setVisibility(View.VISIBLE);
-		_mainView.setVisibility(View.GONE);
+		int id = v.getId();
 
-		sendData = false;
-		if( !TextUtils.isEmpty( _displayName.getText() ) && !_displayName.getText().toString().equalsIgnoreCase(_newData.getDisplayName()) ){
-			sendData = true;
-			_newData.setDisplayName(_displayName.getText().toString());
-		}
-		if( !TextUtils.isEmpty( _email.getText() ) && !_email.getText().toString().equalsIgnoreCase(_newData.getEmail()) ){
-			sendData = true;
-			_newData.setEmail(_email.getText().toString());
-		}
-		if( !TextUtils.isEmpty( _description.getText() ) && !_description.getText().toString().equalsIgnoreCase(_newData.getDesc()) ){
-			sendData = true;
-			_newData.setDesc(_description.getText().toString());
+		switch (id) {
+		case R.id.profile_send_btn:
+			pref = null;
+			pref = new ManagePreferences(_context);
+			_progressLayout.setVisibility(View.VISIBLE);
+			_mainView.setVisibility(View.GONE);
+
+			sendData = false;
+			if( !TextUtils.isEmpty( _displayName.getText() ) && !_displayName.getText().toString().equalsIgnoreCase(_newData.getDisplayName()) ){
+				sendData = true;
+				_newData.setDisplayName(_displayName.getText().toString());
+			}
+			if( !TextUtils.isEmpty( _email.getText() ) && !_email.getText().toString().equalsIgnoreCase(_newData.getEmail()) ){
+				sendData = true;
+				_newData.setEmail(_email.getText().toString());
+			}
+			if( !TextUtils.isEmpty( _description.getText() ) && !_description.getText().toString().equalsIgnoreCase(_newData.getDesc()) ){
+				sendData = true;
+				_newData.setDesc(_description.getText().toString());
+			}
+
+			if(sendData){
+				_mProfileHandler.setProfileData(_newData);
+				_mProfileHandler.updateProfile();
+			}
+
+			if(sendTask == null || sendTask.getStatus() != Status.RUNNING){
+				sendTask = null;
+				sendTask = new MyAsyncTask();
+			}
+			sendTask.execute();
+			break;
+
+		case R.id.profile_img:
+			AlertDialog dialog = new AlertDialog.Builder(_context)
+			.setTitle("Choose image option")
+			.setAdapter(new ArrayAdapter<String>(_context, android.R.layout.simple_list_item_1, new String[]{"Camera", "Gallery"}), 
+					new DialogInterface.OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface arg0, int position) {
+					// TODO Auto-generated method stub
+					switch(position){
+					case 0:
+						Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE); 
+						startActivityForResult(cameraIntent, CAMERA_REQUEST); 
+						break;
+
+					case 1:
+						Intent intent = new Intent(Intent.ACTION_PICK);
+						intent.setType("image/*");
+						startActivityForResult(intent, GALLERY_REQUEST);
+						break;
+					}
+				}
+			})
+			.create();
+			dialog.show();
+			break;
+			
+		default:
+			break;
 		}
 
-		if(sendData){
-			_mProfileHandler.setProfileData(_newData);
-			_mProfileHandler.updateProfile();
-		}
-		
-		if(sendTask == null || sendTask.getStatus() != Status.RUNNING){
-			sendTask = null;
-			sendTask = new MyAsyncTask();
-		}
-		sendTask.execute();
-		
+
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {  
+			_imageDrawable = (Bitmap) data.getExtras().get("data"); 
+			_imgView.setImageBitmap(_imageDrawable);
+		}
+		else if(requestCode == GALLERY_REQUEST && resultCode == RESULT_OK){
+			Uri selectedImage = data.getData();
+			String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+			Cursor cursor = getContentResolver().query(
+					selectedImage, filePathColumn, null, null, null);
+			cursor.moveToFirst();
+
+			int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+			String filePath = cursor.getString(columnIndex);
+			cursor.close();
+
+
+			_imageDrawable = BitmapFactory.decodeFile(filePath);
+			_imgView.setImageBitmap(_imageDrawable);
+		}
+	}
+
+	
 	@Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
@@ -120,6 +196,7 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 		_email = (TextView)findViewById(R.id.profile_email_address);
 		_mainView = (ScrollView)findViewById(R.id.profile_main_view);
 		_progressLayout = findViewById(R.id.profile_progress_layout);
+		_imgView = (ImageView) findViewById(R.id.profile_img);
 
 		String []credentials = StaticUtilMethods.getUserCredentials(_context);
 		_mProfileHandler = new ProfileHandler(_context, credentials[0], credentials[1]);
@@ -135,6 +212,7 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 			_description.setText(_newData.getDesc());
 
 		((Button)findViewById(R.id.profile_send_btn)).setOnClickListener(this);
+		_imgView.setOnClickListener(this);
 
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);

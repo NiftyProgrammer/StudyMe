@@ -12,9 +12,9 @@
         android:id="@+id/left_drawer_sliding_up_panel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:shadowHeight="0dp"
         android:gravity="bottom"
-        app:dragView="@+id/main_view_anchor_view" >
+        app:dragView="@+id/main_view_anchor_view"
+        app:shadowHeight="0dp" >
 
         <FrameLayout
             android:id="@+id/content_frame"
@@ -28,25 +28,16 @@
             layout="@layout/main_slideup_panel"
             android:gravity="center|bottom"
             android:visibility="gone" />
-
-        <!--
-             <FrameLayout
-            android:id="@+id/sliding_up_panal"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"
-            android:gravity="center|top"></FrameLayout>
-        -->
-
     </com.rwth.i10.exercisegroups.Util.SlidingUpPanelLayout>
     <!-- The navigation drawer -->
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/left_drawer"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="#fff" >
+        android:background="#fff"
+        android:orientation="vertical" >
 
         <LinearLayout
             android:id="@+id/left_drawer_filter_layout"
@@ -63,51 +54,169 @@
                 <requestFocus />
             </EditText>
 
-            <Button
+            <ImageButton
                 android:id="@+id/left_drawer_filter_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="filter" />
+                android:background="@drawable/main_selector"
+                android:padding="8dp"
+                android:src="@drawable/filter" />
         </LinearLayout>
 
         <Button
             android:id="@+id/left_drawer_view_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/left_drawer_filter_layout"
-            android:text="List View" />
+            android:text="List View"
+            android:visibility="gone" />
 
-        <Button
-            android:id="@+id/left_drawer_create_group_btn"
+        <ScrollView
+            android:id="@+id/scrollView1"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/left_drawer_view_btn"
-            android:text="Create Group" />
+            android:layout_height="match_parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:overScrollMode="never"
+            android:scrollbars="none" >
 
-        <Button
-            android:id="@+id/left_drawer_profile_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/left_drawer_create_group_btn"
-            android:text="Edit Profile" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical" >
 
-        <Button
-            android:id="@+id/left_drawer_profile_change_status"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/left_drawer_profile_btn"
-            android:drawableStart="#FE4848" />
+                <View
+                    android:id="@+id/splitor_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="15dp"
+                    android:background="@drawable/splitor_drawable"
+                    android:orientation="vertical" />
 
-        <ListView
-            android:id="@+id/left_drawer_group_list"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/left_drawer_profile_btn"
-            android:choiceMode="singleChoice"
-            android:divider="@android:color/white"
-            android:dividerHeight="0dp" />
-    </RelativeLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:id="@+id/left_drawer_profile_btn"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/main_selector"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="Edit Profile"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <Button
+                        android:id="@+id/left_drawer_profile_change_status"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="#FE4848" />
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/splitor_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="15dp"
+                    android:background="@drawable/splitor_drawable"
+                    android:orientation="vertical" />
+
+                <LinearLayout
+                    android:id="@+id/left_drawer_users_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/main_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:orientation="horizontal" >
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="Users"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <TextView
+                        android:id="@+id/left_drawer_users_count"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:background="#A9BCF5"
+                        android:gravity="center"
+                        android:textColor="@android:color/black" />
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/splitor_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="15dp"
+                    android:background="@drawable/splitor_drawable"
+                    android:orientation="vertical" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:id="@+id/left_drawer_group_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:text="Groups"
+                        android:textStyle="italic" />
+
+                    <ImageButton
+                        android:id="@+id/left_drawer_create_group_btn"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/main_selector"
+                        android:src="@drawable/add" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/left_drawer_group_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/splitor_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="15dp"
+                    android:background="@drawable/splitor_drawable"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/left_drawer_logout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/main_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:text="Logout User"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <View
+                    android:id="@+id/splitor_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="15dp"
+                    android:background="@drawable/splitor_drawable"
+                    android:orientation="vertical" />
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>

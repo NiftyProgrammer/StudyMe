@@ -26,13 +26,13 @@ public class GcmServer {
 
 	private Context context;
 	private int status;
-	
+
 	public void sendMessage(final Map<String, String> msgParams,
 			final List<String> regIds, final MessagesTypes type,
 			Context context){
-		
+
 		this.context = context;
-		
+
 		new AsyncTask<Void, Void, Void>(){
 
 			@Override
@@ -46,81 +46,83 @@ public class GcmServer {
 				}
 				return null;
 			}
-			
+
 		}.execute();
 	}
-	
+
 
 	private void post(Map<String, String> msgParams, List<String> regIds, MessagesTypes type)
-						throws IOException{
+			throws IOException{
 		// TODO Auto-generated method stub
 		URL url;
-    	String baseUrl = context.getString(R.string.gcm_server_base_url);
-        try { 
-            url = new URL(baseUrl);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("invalid url: " + baseUrl);
-        }
+		String baseUrl = context.getString(R.string.gcm_server_base_url);
+		try { 
+			url = new URL(baseUrl);
+		} catch (MalformedURLException e) {
+			throw new IllegalArgumentException("invalid url: " + baseUrl);
+		}
 
-        StringBuilder bodyBuilder = new StringBuilder();
-        Iterator<Map.Entry<String, String>> iterator = msgParams.entrySet().iterator();
-        // constructs the POST body using the parameters
-        while (iterator.hasNext()) {
-            Map.Entry<String, String> param = iterator.next();
-            bodyBuilder.append("data." + param.getKey()).append('=')
-                       .append(param.getValue());
-            if (iterator.hasNext()) {
-                bodyBuilder.append('&');
-            }
-        }
-        
-        
-        // add the regId to the end
-        String body = bodyBuilder.toString();
-        Iterator<String> regIdIterator = regIds.iterator();
-        while (regIdIterator.hasNext()){
-            body += "&registration_id="+regIdIterator.next();
-        }
-        body += "&restricted_package_name=com.rwth.i10.exercisegroups";
-        
-        if(type == MessagesTypes.UPDATE_GROUPS)
-        body += "&collapse_key=" + String.valueOf(type.ordinal());
+		StringBuilder bodyBuilder = new StringBuilder();
+		Iterator<Map.Entry<String, String>> iterator = msgParams.entrySet().iterator();
+		// constructs the POST body using the parameters
+		while (iterator.hasNext()) {
+			Map.Entry<String, String> param = iterator.next();
+			bodyBuilder.append("data." + param.getKey()).append('=')
+			.append(param.getValue());
+			if (iterator.hasNext()) {
+				bodyBuilder.append('&');
+			}
+		}
 
-        byte[] bytes = body.getBytes();
-        HttpsURLConnection conn = null;
 
-        try {
-            Log.e("URL", "> " + url);
+		// add the regId to the end
+		String body = bodyBuilder.toString();
+		Iterator<String> regIdIterator = regIds.iterator();
+		while (regIdIterator.hasNext()){
+			body += "&registration_id="+regIdIterator.next();
+		}
+		body += "&restricted_package_name=com.rwth.i10.exercisegroups";
 
-            conn = (HttpsURLConnection) url.openConnection();
-            conn.setSSLSocketFactory(SSLContext.getInstance("Default").getSocketFactory());
-            conn.setHostnameVerifier(new HostnameVerifier() {
-                @Override
-                public boolean verify(String s, SSLSession sslSession) {
-                    return true;
-                }
-            });
+		if(type == MessagesTypes.UPDATE_GROUPS)
+			body += "&collapse_key=1";
+		if(type == MessagesTypes.NEW_USER_JOINED)
+			body += "&collapse_key=2";
 
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Authorization", "key=AIzaSyAALG1bJYhdQkJgomnMc_uhwFbeSnPcbns");
-            conn.setRequestMethod("POST");
+		byte[] bytes = body.getBytes();
+		HttpsURLConnection conn = null;
 
-            // post the request
-            OutputStream out = conn.getOutputStream();
-            out.write(bytes);
-            out.close();
+		try {
+			Log.e("URL", "> " + url);
 
-            // handle the response
-            status = conn.getResponseCode();
-            if (status != 200) {
-                throw new IOException("GCM Post failed with error code " + status);
-            }
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
+			conn = (HttpsURLConnection) url.openConnection();
+			conn.setSSLSocketFactory(SSLContext.getInstance("Default").getSocketFactory());
+			conn.setHostnameVerifier(new HostnameVerifier() {
+				@Override
+				public boolean verify(String s, SSLSession sslSession) {
+					return true;
+				}
+			});
+
+			conn.setDoOutput(true);
+			conn.setRequestProperty("Authorization", "key=AIzaSyAALG1bJYhdQkJgomnMc_uhwFbeSnPcbns");
+			conn.setRequestMethod("POST");
+
+			// post the request
+			OutputStream out = conn.getOutputStream();
+			out.write(bytes);
+			out.close();
+
+			// handle the response
+			status = conn.getResponseCode();
+			if (status != 200) {
+				throw new IOException("GCM Post failed with error code " + status);
+			}
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
+		}
 	}
 }

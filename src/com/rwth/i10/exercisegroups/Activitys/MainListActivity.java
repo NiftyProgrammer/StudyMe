@@ -1,4 +1,4 @@
-package com.rwth.i10.exercisegroups.Activitys;
+/*package com.rwth.i10.exercisegroups.Activitys;
 
 import java.util.HashMap;
 
@@ -171,11 +171,11 @@ public class MainListActivity extends ActionBarActivity implements ContextData.L
 					for(JSONObject obj : list.values())
 						if(obj != null)
 							publishProgress(obj);
-				}/*
+				}
 				JSONObject obj = events.optJSONObject(events.length()-1);
 				String status = obj.optString("group_status");
 				//if(!TextUtils.isEmpty(status) && status.equalsIgnoreCase("START"))
-					publishProgress(obj);*/
+					publishProgress(obj);
 			}
 			return null;
 		}
@@ -219,7 +219,7 @@ public class MainListActivity extends ActionBarActivity implements ContextData.L
 
 				Log.d("name", name);
 				GroupData data = new GroupData(source, course, address, 0, null);
-				data.setGroup_id(id);
+				data.setGroupSession(id);
 				adapter.addItem(data);
 			}
 		}
@@ -227,3 +227,4 @@ public class MainListActivity extends ActionBarActivity implements ContextData.L
 	}
 	
 }
+*/

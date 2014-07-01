@@ -24,6 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
+            android:layout_toLeftOf="@+id/main_view_join_btn"
             android:layout_toRightOf="@+id/main_view_group_img"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -34,6 +35,7 @@
             android:layout_alignLeft="@+id/main_view_group_name"
             android:layout_below="@+id/main_view_group_name"
             android:layout_margin="8dp"
+            android:layout_toLeftOf="@+id/main_view_join_btn"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
@@ -67,25 +69,39 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textStyle="italic" />
 
-        <Button
+        <ImageButton
             android:id="@+id/main_view_join_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:drawableTop="@android:drawable/ic_menu_add"
-            android:text="Join" />
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/main_selector"
+            android:src="@drawable/add" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/main_view_join_btn"
+            android:layout_below="@+id/main_view_join_btn"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:text="Join"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textStyle="italic" />
     </RelativeLayout>
 
     <ScrollView
-        android:id="@+id/scrollView1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" >
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
 
             <TextView
                 android:id="@+id/main_view_group_desc"
@@ -98,10 +114,17 @@
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <LinearLayout
+                android:id="@+id/main_view_group_users"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:orientation="vertical" >
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/main_view_messages_list"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/main_view_group_desc"
                 android:layout_margin="8dp"
                 android:orientation="vertical" >
             </LinearLayout>
@@ -110,9 +133,9 @@
                 android:id="@+id/main_view_message_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/main_view_messages_list"
                 android:layout_margin="8dp"
-                android:orientation="horizontal" >
+                android:orientation="horizontal"
+                android:visibility="gone" >
 
                 <EditText
                     android:id="@+id/main_view_message_text"
@@ -128,7 +151,7 @@
                     android:layout_height="wrap_content"
                     android:drawableStart="@android:drawable/ic_menu_send" />
             </LinearLayout>
-        </RelativeLayout>
+        </LinearLayout>
     </ScrollView>
 
 </LinearLayout>

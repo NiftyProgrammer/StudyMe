@@ -24,12 +24,17 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.provider.ContactsContract.CommonDataKinds.Event;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -41,13 +46,18 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -77,10 +87,13 @@ import com.rwth.i10.exercisegroups.Util.ProfileHandler;
 import com.rwth.i10.exercisegroups.Util.ServerHandler;
 import com.rwth.i10.exercisegroups.Util.SlidingUpPanelLayout;
 import com.rwth.i10.exercisegroups.Util.StaticUtilMethods;
+import com.rwth.i10.exercisegroups.Util.UserStatus;
 import com.rwth.i10.exercisegroups.database.GroupsDataSource;
 import com.rwth.i10.exercisegroups.database.SQLiteHelper;
 import com.rwth.i10.exercisegroups.gcm_config.GcmServer;
 import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
+
+import de.contextdata.Entity;
 
 public class MainActivity extends ActionBarActivity implements MyContextData.Listener,
 LocationListener, View.OnClickListener{
@@ -99,6 +112,7 @@ LocationListener, View.OnClickListener{
 
 	private static Activity context;
 	private static MainActivity mainInstance;
+	private static boolean isRefresh;
 
 	private static GoogleMap map;	
 	private static SupportMapFragment mapFragment;
@@ -112,6 +126,7 @@ LocationListener, View.OnClickListener{
 	private static DrawerLayout mDrawerLayout;
 	private static View LeftDrawer;
 	private static TextView filterView;
+	private static TextView usersCounter;
 	private static View slidingLayout;
 	private static SlidingUpPanelLayout slidingPanel;
 	private static HashMap<Marker, GroupData> allMarkers = new HashMap<Marker, GroupData>();
@@ -192,11 +207,10 @@ LocationListener, View.OnClickListener{
 		super.onStart();
 
 		if(StaticUtilMethods.isNetworkAvailable(context)){
-			setProgressBarIndeterminateVisibility(true);
 			fetschGroups();
 		}
 		else
-			Toast.makeText(context, "Network not connected", Toast.LENGTH_LONG).show();
+			showToast("Network not connected");
 	}
 
 	@Override
@@ -214,12 +228,22 @@ LocationListener, View.OnClickListener{
 	}
 
 	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+
+		return true;
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
+		if (id == R.id.action_refresh) {
+			fetschGroups();
 			return true;
 		}
 		else if(mActionBarDrawerToggle.onOptionsItemSelected(item))
@@ -230,9 +254,9 @@ LocationListener, View.OnClickListener{
 	@Override
 	public void onLocationChanged(Location location) {
 		// TODO Auto-generated method stub
-		if(location.distanceTo(mLocation) > 50){
+		/*if(location.distanceTo(mLocation) > 50){
 			//stop group if running
-		}
+		}*/
 		if(StaticUtilMethods.isBetterLocation(mLocation, location))
 			mLocation = location;
 	}
@@ -309,13 +333,16 @@ LocationListener, View.OnClickListener{
 		if(checkPlayServices()){
 			gcm = GoogleCloudMessaging.getInstance(context);
 			regId = getRegistrationId(context);
+			int prevTime = getPreviousRevisedVersion(context);
+			int currentTime = (int)(System.currentTimeMillis() / 1000.0f);
 			Log.d("RegId", "prev Id: " + regId);
-			if (TextUtils.isEmpty(regId)) {
+			if (firstLogin || (TextUtils.isEmpty(regId) && Math.abs(currentTime - prevTime) > 86400000)) {		//if id is older then day
 				registerInBackground();
 			}
 		}
 
 		getDatabaseGroups();
+		//getDatabaseUsersJoinReq();
 
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		String provider = mLocationManager.getBestProvider(new Criteria(), true);
@@ -338,6 +365,10 @@ LocationListener, View.OnClickListener{
 			return "";
 		}
 		return registrationId;
+	}
+	private int getPreviousRevisedVersion(Context context){
+		ManagePreferences prefs = new ManagePreferences(context);
+		return prefs.getIntPreferences(Constants.PROPERTY_REG_ID_DATE, (int)(System.currentTimeMillis() / 1000.0f));
 	}
 	private static int getAppVersion(Context context) {
 		try {
@@ -384,6 +415,7 @@ LocationListener, View.OnClickListener{
 		ManagePreferences pref = new ManagePreferences(context);
 		int appVersion = getAppVersion(context);
 		pref.putStringPreferences(Constants.PROPERTY_REG_ID, regId);
+		pref.putIntPreferences(Constants.PROPERTY_REG_ID_DATE, (int)(System.currentTimeMillis() / 1000.0f));
 		pref.putIntPreferences(Constants.PROPERTY_APP_VERSION, appVersion);
 	}
 
@@ -404,7 +436,8 @@ LocationListener, View.OnClickListener{
 								cursor.getString(cursor.getColumnIndex(SQLiteHelper.TABLE_COURSE)),
 								cursor.getString(cursor.getColumnIndex(SQLiteHelper.TABLE_ADDRESS)),
 								cursor.getInt(cursor.getColumnIndex(SQLiteHelper.TABLE_MAX_PART)), null);
-						data.setGroup_id(cursor.getString(cursor.getColumnIndex(SQLiteHelper.TABLE_ID)));
+						data.setGroupId(cursor.getString(cursor.getColumnIndex(SQLiteHelper.TABLE_ID)));
+						data.setGroupSession(cursor.getString(cursor.getColumnIndex(SQLiteHelper.TABLE_SESSION)));
 						data.setLat(cursor.getDouble(cursor.getColumnIndex(SQLiteHelper.TABLE_LAT)));
 						data.setLng(cursor.getDouble(cursor.getColumnIndex(SQLiteHelper.TABLE_LNG)));
 						data.setStatus(cursor.getString(cursor.getColumnIndex(SQLiteHelper.TABLE_STATUS)));
@@ -425,13 +458,50 @@ LocationListener, View.OnClickListener{
 		}.execute();
 	}
 
+	private boolean isWithinDistance(double groupLat, double groupLng){
+		if(mLocation == null)
+			return false;
+		double latDistance = Math.toRadians(mLocation.getLatitude() - groupLat);
+		double lngDistance = Math.toRadians(mLocation.getLongitude() - groupLng);
+		double a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2)) +
+				(Math.cos(Math.toRadians(mLocation.getLatitude()))) *
+				(Math.cos(Math.toRadians(groupLat))) *
+				(Math.sin(lngDistance / 2)) *
+				(Math.sin(lngDistance / 2));
+
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+		double dist = 6371 * c;             
+		return dist < 50;
+	}
+
+
+
+	private static void getDatabaseUsersJoinReq(){
+		new AsyncTask<Void, Void, Integer>(){
+			@Override
+			protected Integer doInBackground(Void... params) {
+				// TODO Auto-generated method stub
+				return databaseSourse.getUsersCount(UserStatus.JOIN_REQUEST.ordinal());
+			}
+			@Override
+			protected void onPostExecute(Integer result) {
+				// TODO Auto-generated method stub
+				if(result > 0){
+					usersCounter.setVisibility(View.VISIBLE);
+					usersCounter.setText(String.valueOf(result));
+				}					
+			}
+		}.execute();
+	}	
+
 
 	private static void sendMessageToServer(Map<String, String> params, List<String> ids, MessagesTypes type){
 		GcmServer server = new GcmServer();
 		server.sendMessage(params, ids, type, context);
 	}
 
-	public static void deleteGroupFromServer(String id){
+	public static void deleteGroupFromServer(GroupData group){
 		getRequest = GetRequest.DELETE_GROUP_REQUEST;
 
 		JSONObject data = new JSONObject();
@@ -443,10 +513,31 @@ LocationListener, View.OnClickListener{
 			data.put("type", "ANNOUNCEMENT");
 
 			JSONObject entity1 = new JSONObject();
-			entity1.put("key", "group_id");
-			entity1.put("value", id);
+			JSONObject entity2 = new JSONObject();
+			JSONObject entity3 = new JSONObject();
+			JSONObject entity4 = new JSONObject();
+			JSONObject entity5 = new JSONObject();
+
+			entity1.put("key", "app");
+			entity1.put("value", "study_me");
+
+			entity2.put("key", "group_activity");
+			entity2.put("value", group.getName());
+
+			entity3.put("key", "group_admin");
+			entity3.put("value", group.getAdmin());
+
+			entity4.put("key", "group_id");
+			entity4.put("value", group.getGroupId());
+
+			entity5.put("key", "joined_users");
+			entity5.put("value", group.getUsers_joined().toString());
+
 			JSONArray entities = new JSONArray();
 			entities.put(entity1);
+			entities.put(entity2);
+			entities.put(entity3);
+			entities.put(entity4);
 
 			data.put("entities", entities);			
 		} catch (Exception e) {}
@@ -457,7 +548,18 @@ LocationListener, View.OnClickListener{
 	}
 
 	public static void fetschGroups(){
+		Handler mainHandler = new Handler(Looper.getMainLooper());
+		mainHandler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mainInstance.setProgressBarIndeterminateVisibility(true);
+			}
+		});
+		
 		getRequest = GetRequest.GROUP_REQUEST;
+		isRefresh = true;
 		serverHandler.get("events/show", StaticUtilMethods.createFetchServerJSON());
 	}
 	public static void sendMessage(String message, String []ids, final MessagesTypes type){
@@ -543,7 +645,7 @@ LocationListener, View.OnClickListener{
 	}
 
 	public static void hideUserProfile(){
-		new AsyncTask<Void, Void, Integer>(){
+		new AsyncTask<Void, Void, Long>(){
 			private ProfileHandler mServerProfile;
 			protected void onPreExecute() {
 				mServerProfile = new ProfileHandler(context, context.getString(R.string.server_username),
@@ -552,7 +654,7 @@ LocationListener, View.OnClickListener{
 			}
 
 			@Override
-			protected Integer doInBackground(Void... arg0) {
+			protected Long doInBackground(Void... arg0) {
 				// TODO Auto-generated method stub
 				while(mServerProfile.getUploadedId()){
 					try {
@@ -561,18 +663,20 @@ LocationListener, View.OnClickListener{
 				}
 				return mServerProfile.getProfileData().getEvent_id();
 			}
-			protected void onPostExecute(Integer result) {
+			protected void onPostExecute(Long result) {
 				if(result > 0)
 					mServerProfile.deleteProfile(result);
 			}
 		}.execute();
 	}
 
-
 	private void setFilteredGroups(ArrayList<JSONObject> array){
-		SetMarkers marks = new SetMarkers();
+
+		SetMarkers marks = new SetMarkers();		
+		marks.onPreExecute();
+
 		if(array == null || array.isEmpty()){
-			Toast.makeText(context, "No group found", Toast.LENGTH_SHORT).show();
+			showToast("No group found");
 			return;
 		}
 		for(int i=0; i<array.size(); i++)
@@ -580,9 +684,94 @@ LocationListener, View.OnClickListener{
 		marks.onPostExecute(null);
 	}
 
+		
+	private static long getPreviousGroupData(GroupData group){
+		JSONArray events = null;
+		try {
+			JSONObject data = new JSONObject(allGroupsString);
+			events = data.getJSONArray("events");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		long groupId = 0;
+		if(events != null){
+			for(int i=0; i< events.length(); i++){
+				JSONObject eve = events.optJSONObject(i);
+				groupId = eve.optLong("id");
 
-	public static void addUserRequest(ProfileData data){
-		JSONObject event = new JSONObject();
+				GroupData tempGroup = new GroupData();
+
+				JSONArray entities = eve.optJSONArray("entities");
+				if(entities != null){
+					for(int j=0; j<entities.length(); j++){
+						JSONObject entity = entities.optJSONObject(j);
+						if(entity != null){
+							if("group_activity".equalsIgnoreCase(entity.optString("key")))
+								tempGroup.setName(entity.optString("value"));
+							if("group_course".equalsIgnoreCase(entity.optString("key")))
+								tempGroup.setCourse(entity.optString("value"));
+							if("group_address".equalsIgnoreCase(entity.optString("key")))
+								tempGroup.setAddress(entity.optString("value"));
+							if("group_desc".equalsIgnoreCase(entity.optString("key")))
+								tempGroup.setDescription(entity.optString("value"));
+							if("group_id".equalsIgnoreCase(entity.optString("key")))
+								tempGroup.setGroupId(entity.optString("value"));
+							if("group_admin".equalsIgnoreCase(entity.optString("key")))
+								tempGroup.setAdmin(entity.optString("value"));
+							if("lat".equalsIgnoreCase(entity.optString("key")))
+								tempGroup.setLat(entity.optDouble("value"));
+							if("lng".equalsIgnoreCase(entity.optString("key")))
+								tempGroup.setLng(entity.optDouble("value"));
+						}
+					}
+					if(tempGroup.equals(group))
+						break;
+				}
+			}
+		}
+		return groupId;
+	}
+
+	private static void addUserInGroup(String group_id, ProfileData data){
+
+		data.setStatus(UserStatus.JOIN_REQUEST.ordinal());
+		data.setPublicProfile(false);
+		databaseSourse.createUser(data, group_id);			//add user in database
+
+		//add user in arraylist
+		GroupData group = groupListView.getGroupItem(group_id);
+		if(group != null){
+			group.addUsers_joined(data.getUsername() + Constants.VALUE_SEPRATOR + data.getMsg_id());
+			groupListView.updateGroup(group);
+			mainInstance.new SetMarkers().updateMarkerData(group);
+
+			/*//delete previous group from server and upload new user
+			try {
+				long prevId = getPreviousGroupData(group);
+				serverHandler.post("events/delete", new JSONObject().put("id", prevId).toString());
+			} catch (JSONException e) {}
+			 */
+			//sending new group data.
+			group.setStatus("UPDATE");
+
+
+			//send from user activity when permitted.
+			//MainListViewAdapter.sendGroupData(group);
+
+			//send msg to others when user is joined
+			//sendMessage(data.getUsername(), group.getUsers_joined().toArray(new String[]{}), MessagesTypes.NEW_USER_JOINED);
+		}
+	}
+
+	public static void addUserRequest(ProfileData data, String group_id){
+
+
+		addUserInGroup(group_id, data);
+
+		getDatabaseUsersJoinReq();
+
+		/*JSONObject event = new JSONObject();
 		try {
 			event.put("model", "COMPLETE");
 			event.put("category", "ACTIVITY");
@@ -615,14 +804,35 @@ LocationListener, View.OnClickListener{
 		}
 
 		getRequest = GetRequest.USER_PROFILE_REQUEST;
-		serverHandler.get("event/show", event.toString());
+		serverHandler.get("event/show", event.toString());*/
 
+	}
+
+	public static String getUsername(){
+		return mUsername;
+	}
+	
+	public static void showToast(String msg){
+		LayoutInflater inflator = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = inflator.inflate(R.layout.toast_layout, null);
+		((TextView)view.findViewById(R.id.toast_text)).setText(msg);
+
+		Typeface typeFace = Typeface.createFromAsset(context.getAssets(), "gabriola.ttf");
+		((TextView)view.findViewById(R.id.toast_text)).setTypeface(typeFace);
+
+		Toast toast = new Toast(context);
+		toast.setDuration(Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL, 0, 0);
+		toast.setMargin(0, 0.05f);
+		toast.setView(view);
+		toast.show();
+		Log.i("Message", msg);
 	}
 
 	public static void addGroupMessage(GroupData data, String msg){
-		
+
 	}
-	
+
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
@@ -640,7 +850,9 @@ LocationListener, View.OnClickListener{
 			filterView = (TextView)rootView.findViewById(R.id.left_drawer_filter);
 			slidingLayout = rootView.findViewById(R.id.sliding_up_panal);
 			slidingPanel = (SlidingUpPanelLayout)rootView.findViewById(R.id.left_drawer_sliding_up_panel);
+			usersCounter = (TextView) rootView.findViewById(R.id.left_drawer_users_count);
 
+			usersCounter.setVisibility(View.GONE);
 
 			//setting nevigation drawer
 			mDrawerLayout = (DrawerLayout)rootView.findViewById(R.id.drawer_layout);
@@ -651,10 +863,11 @@ LocationListener, View.OnClickListener{
 			mDrawerLayout.setDrawerListener(mActionBarDrawerToggle);
 			mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_holo_light, GravityCompat.START);
 
-			ListView groupList = (ListView) rootView.findViewById(R.id.left_drawer_group_list);
-			groupList.setAdapter(groupListView);
+			ViewGroup groupList = (ViewGroup) rootView.findViewById(R.id.left_drawer_group_list);
+			groupListView.setMainView(groupList);
+			groupListView.notifyDataSetInvalidated();
 
-			Button btn = (Button)rootView.findViewById(R.id.left_drawer_create_group_btn);
+			ImageButton btn = (ImageButton)rootView.findViewById(R.id.left_drawer_create_group_btn);
 			btn.setOnClickListener(new View.OnClickListener() {
 
 				@Override
@@ -664,7 +877,7 @@ LocationListener, View.OnClickListener{
 					startActivity(new Intent(context, CreateGroupActivity.class));
 				}
 			});
-			((Button)rootView.findViewById(R.id.left_drawer_view_btn)).setOnClickListener(new View.OnClickListener() {
+			/*((Button)rootView.findViewById(R.id.left_drawer_view_btn)).setOnClickListener(new View.OnClickListener() {
 
 				@Override
 				public void onClick(View v) {
@@ -672,8 +885,8 @@ LocationListener, View.OnClickListener{
 					mDrawerLayout.closeDrawer(LeftDrawer);
 					startActivity(new Intent(context, MainListActivity.class));										
 				}
-			});
-			((Button)rootView.findViewById(R.id.left_drawer_profile_btn)).setOnClickListener(new View.OnClickListener() {
+			});*/
+			((TextView)rootView.findViewById(R.id.left_drawer_profile_btn)).setOnClickListener(new View.OnClickListener() {
 
 				@Override
 				public void onClick(View v) {
@@ -703,7 +916,9 @@ LocationListener, View.OnClickListener{
 					}					
 				}
 			});
-			((Button)rootView.findViewById(R.id.left_drawer_filter_btn)).setOnClickListener(mainInstance);
+			((ImageButton)rootView.findViewById(R.id.left_drawer_filter_btn)).setOnClickListener(mainInstance);
+			((TextView)rootView.findViewById(R.id.left_drawer_logout)).setOnClickListener(mainInstance);
+			((LinearLayout)rootView.findViewById(R.id.left_drawer_users_layout)).setOnClickListener(mainInstance);
 
 			//slidingPanel.collapsePanel();
 			slidingPanel.setPanelHeight(0);
@@ -722,18 +937,7 @@ LocationListener, View.OnClickListener{
 				@Override
 				public void onPanelExpanded(View panel) {
 					// TODO Auto-generated method stub
-					if(allMarkers.isEmpty())
-						return;
-					LatLngBounds.Builder builder = new LatLngBounds.Builder();
-					for (Marker marker : allMarkers.keySet()) {
-						builder.include(marker.getPosition());
-					}
-					LatLngBounds bounds = builder.build();
-					int padding = 0; // offset from edges of the map in pixels
-					CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
 
-					map.moveCamera(cu);
-					map.animateCamera(cu);
 				}
 
 				@Override
@@ -771,33 +975,67 @@ LocationListener, View.OnClickListener{
 		switch(id){
 
 		case R.id.left_drawer_filter_btn:
+		{
 			mDrawerLayout.closeDrawer(LeftDrawer);
 			String getString = filterView.getText().toString();
 			if(!TextUtils.isEmpty(getString)){
+
+
 				Log.d("String", getString);
 				try {
 					ArrayList<JSONObject> sendObject = new ArrayList<JSONObject>();
 					JSONObject data = new JSONObject(allGroupsString);
 					JSONArray events = data.getJSONArray("events");
-					for(int j=0; j<events.length(); j++){
-						JSONObject event = events.optJSONObject(j);
-						JSONArray entities = event.optJSONArray("entities");
-						if(entities != null){
-							String course = "";
-							for(int i=0; i<entities.length(); i++){
-								JSONObject entitiy = entities.optJSONObject(i);
-								if(entitiy != null){
-									if("group_course".equalsIgnoreCase(entitiy.optString("key"))){
-										course = entitiy.optString("value");
-										break;
+
+					if(events != null){
+						LinkedHashMap<String, JSONObject> startedGroups = new LinkedHashMap<String, JSONObject>();
+						LinkedHashMap<String, JSONObject> updatedGroups = new LinkedHashMap<String, JSONObject>();
+						ArrayList<String> endedGroups = new ArrayList<String>();
+						for(int i=0; i< events.length(); i++){
+							JSONObject eve = events.optJSONObject(i);
+							String groupId = eve.optString("session");
+
+							JSONArray entities = eve.optJSONArray("entities");
+							if(entities != null){
+								String course = "";
+								double lat = 0, lng = 0;
+								for(int j=0; j<entities.length(); j++){
+									JSONObject entity = entities.optJSONObject(j);
+									if(entity != null){
+										if("lat".equalsIgnoreCase(entity.optString("key")))
+											lat = entity.optDouble("value");
+										if("lng".equalsIgnoreCase(entity.optString("key")))
+											lng = entity.optDouble("value");
+										if("group_course".equalsIgnoreCase(entity.optString("key")))
+											course = entity.optString("value");
 									}
 								}
-							}
-							Log.d("course", course);
-							if(Pattern.compile(Pattern.quote(course), Pattern.CASE_INSENSITIVE).matcher(getString).find()){
-								sendObject.add(event);
+
+								if(isWithinDistance(lat, lng) && (Pattern.compile(Pattern.quote(course), Pattern.CASE_INSENSITIVE).matcher(getString).find() || 
+										course.toLowerCase().contains(getString.toLowerCase()))){
+									if(eve.optString("action").equalsIgnoreCase("START"))
+										startedGroups.put(groupId, eve);
+									else if(eve.optString("action").equalsIgnoreCase("UPDATE"))
+										updatedGroups.put(groupId, eve);
+									else
+										endedGroups.add(groupId);
+								}
+
+							}					
+						}
+
+						if(!endedGroups.isEmpty()){
+							for(int i=0; i<endedGroups.size(); i++){
+								startedGroups.remove(endedGroups.get(i));
 							}
 						}
+						if(!startedGroups.isEmpty())
+							for(String key : startedGroups.keySet()){
+								if(updatedGroups.containsKey(key))
+									sendObject.add(updatedGroups.get(key));
+								else
+									sendObject.add(startedGroups.get(key));
+							}
 					}
 
 					setFilteredGroups(sendObject);
@@ -810,6 +1048,32 @@ LocationListener, View.OnClickListener{
 				new SetMarkers().execute(allGroupsString);
 			}
 			break;
+		}
+
+		case R.id.left_drawer_logout:
+		{
+			ManagePreferences prefs = new ManagePreferences(context);
+			prefs.removePreferences();
+			prefs.removePreferences(
+					getString(R.string.password_pref), 
+					getString(R.string.username_pref),
+					ProfileData.PROFILE_PUBLIC, 
+					Constants.PROPERTY_REG_ID, 
+					Constants.PROPERTY_PROFILE_SESSION, 
+					Constants.PROPERTY_REG_ID_DATE);
+			context.deleteDatabase(SQLiteHelper.DATABASE_NAME);
+
+			startActivity(new Intent(context, LoginActivity.class));
+			finish();
+			break;
+		}
+
+		case R.id.left_drawer_users_layout:
+		{
+			mDrawerLayout.closeDrawer(LeftDrawer);
+			startActivity(new Intent(context, UserActivity.class));
+			break;
+		}
 
 		}
 	}
@@ -818,30 +1082,31 @@ LocationListener, View.OnClickListener{
 	public void onGETResult(String result) {
 		// TODO Auto-generated method stub
 
-		switch(getRequest){
+		if(getRequest != null)
+			switch(getRequest){
 
-		case DELETE_GROUP_REQUEST:
-		{
-			try {
-				JSONObject data = new JSONObject(result);
-				JSONArray events = data.getJSONArray("events");
-				for(int i=0; i<events.length(); i++){
-					JSONObject event = events.optJSONObject(i);
-					if(event != null)
-						serverHandler.post("events/delete", new JSONObject().put("id", event.optString("id")).toString());
-				}
-			} catch (JSONException e) {}
-			break;
-		}
+			case DELETE_GROUP_REQUEST:
+			{
+				try {
+					JSONObject data = new JSONObject(result);
+					JSONArray events = data.getJSONArray("events");
+					for(int i=0; i<events.length(); i++){
+						JSONObject event = events.optJSONObject(i);
+						if(event != null)
+							serverHandler.post("events/delete", new JSONObject().put("id", event.optString("id")).toString());
+					}
+				} catch (JSONException e) {}
+				break;
+			}
 
-		case GROUP_REQUEST:
-		{
-			allGroupsString = result;
-			new SetMarkers().execute(result);
-			break;
-		}
+			case GROUP_REQUEST:
+			{
+				allGroupsString = result;
+				new SetMarkers().execute(result);
+				break;
+			}
 
-		case USER_PROFILE_REQUEST:
+			/*case USER_PROFILE_REQUEST:
 		{
 			try {
 				JSONObject data = new JSONObject(result);
@@ -872,15 +1137,20 @@ LocationListener, View.OnClickListener{
 								tempData.setPublicProfile(false);
 							}						
 						}
+						tempData.setStatus(UserStatus.JOIN_REQUEST.ordinal());
 						databaseSourse.createUser(tempData);
 					}
 				}
 			} catch (JSONException e) {}
 			break;
-		}
+		}*/
 
-		}
+			}
 
+		else{
+			allGroupsString = result;
+			new SetMarkers().execute(result);
+		}			
 
 		getRequest = null;
 	}
@@ -895,29 +1165,18 @@ LocationListener, View.OnClickListener{
 
 	private class SetMarkers extends AsyncTask<String, JSONObject, Void>{
 
-		public SetMarkers() {
-			// TODO Auto-generated constructor stub
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+
 			if(map != null){
 				map.clear();
 				allMarkers.clear();
 			}
-			setProgressBarIndeterminateVisibility(true);
 		}
 
-		private boolean isWithinDistance(double groupLat, double groupLng){
-			double latDistance = Math.toRadians(mLocation.getLatitude() - groupLat);
-			double lngDistance = Math.toRadians(mLocation.getLongitude() - groupLng);
-			double a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2)) +
-					(Math.cos(Math.toRadians(mLocation.getLatitude()))) *
-					(Math.cos(Math.toRadians(groupLat))) *
-					(Math.sin(lngDistance / 2)) *
-					(Math.sin(lngDistance / 2));
 
-			double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-			double dist = 6371 * c;             
-			return dist < 50;
-		}
 
 		@Override
 		protected Void doInBackground(String... params) {
@@ -939,7 +1198,8 @@ LocationListener, View.OnClickListener{
 			}
 
 			if(events != null){
-				LinkedHashMap<String, JSONObject> groups = new LinkedHashMap<String, JSONObject>();
+				LinkedHashMap<String, JSONObject> statedGroups = new LinkedHashMap<String, JSONObject>();
+				LinkedHashMap<String, JSONObject> updatedGroups = new LinkedHashMap<String, JSONObject>();
 				ArrayList<String> endedGroups = new ArrayList<String>();
 				for(int i=0; i< events.length(); i++){
 					JSONObject eve = events.optJSONObject(i);
@@ -960,7 +1220,9 @@ LocationListener, View.OnClickListener{
 
 						if(isWithinDistance(lat, lng)){
 							if(eve.optString("action").equalsIgnoreCase("START"))
-								groups.put(groupId, eve);
+								statedGroups.put(groupId, eve);
+							else if(eve.optString("action").equalsIgnoreCase("UPDATE"))
+								updatedGroups.put(groupId, eve);
 							else
 								endedGroups.add(groupId);
 						}
@@ -970,12 +1232,16 @@ LocationListener, View.OnClickListener{
 
 				if(!endedGroups.isEmpty()){
 					for(int i=0; i<endedGroups.size(); i++){
-						groups.remove(endedGroups.get(i));
+						statedGroups.remove(endedGroups.get(i));
 					}
 				}
-				if(!groups.isEmpty())
-					for(JSONObject obj : groups.values())
-						publishProgress(obj);
+				if(!statedGroups.isEmpty())
+					for(String key : statedGroups.keySet()){
+						if(updatedGroups.containsKey(key))
+							publishProgress(updatedGroups.get(key));
+						else
+							publishProgress(statedGroups.get(key));
+					}
 			}
 
 			return null;
@@ -987,9 +1253,11 @@ LocationListener, View.OnClickListener{
 			GroupData data = new GroupData();
 			JSONArray entities = values[0].optJSONArray("entities");
 			if(entities != null){
-				data.setGroup_id(values[0].optString("session"));
+				data.setGroupSession(values[0].optString("session"));
 				data.setStatus(values[0].optString("action"));
-				data.setTimestamp(values[0].optLong("timestamp"));
+				try {
+					data.setTimestamp(Long.valueOf(values[0].optString("timestamp")) * 1000);
+				} catch (NumberFormatException e1) {}
 				for(int i=0; i<entities.length(); i++){
 					JSONObject entitiy = entities.optJSONObject(i);
 					if(entitiy != null){
@@ -1003,6 +1271,8 @@ LocationListener, View.OnClickListener{
 							data.setDescription(entitiy.optString("value"));
 						else if("group_admin".equalsIgnoreCase(entitiy.optString("key")))
 							data.setAdmin(entitiy.optString("value"));
+						else if("group_id".equalsIgnoreCase(entitiy.optString("key")))
+							data.setGroupId(entitiy.optString("value"));
 						else if("lat".equalsIgnoreCase(entitiy.optString("key")))
 							try {
 								data.setLat(Double.parseDouble(String.valueOf(entitiy.opt("value"))));
@@ -1029,6 +1299,7 @@ LocationListener, View.OnClickListener{
 					}
 				}
 
+				Log.d("Inserted Group", data.getName() + " - " + data.getStatus());
 
 				LatLng position = new LatLng(data.getLat(), data.getLng());
 				MarkerOptions marker = new MarkerOptions()
@@ -1047,7 +1318,8 @@ LocationListener, View.OnClickListener{
 		protected void onPostExecute(Void result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
-			setProgressBarIndeterminateVisibility(false);
+			mainInstance.setProgressBarIndeterminateVisibility(false);
+
 
 			if(allMarkers.isEmpty())
 				return;
@@ -1075,6 +1347,9 @@ LocationListener, View.OnClickListener{
 					((TextView)slidingLayout.findViewById(R.id.main_view_group_date)).setText( StaticUtilMethods.getDate( data.getTimestamp() ) );
 					((TextView)slidingLayout.findViewById(R.id.main_view_group_desc)).setText( data.getDescription() );
 
+					ViewGroup msgLayout = (ViewGroup) slidingLayout.findViewById(R.id.main_view_message_layout);
+					boolean isGroupJoined = databaseSourse.isGroupMsgExists(data.getGroupId());
+
 					Bitmap image = data.getImage();
 					if(data.getImage() == null){
 						image = BitmapFactory.decodeResource(getResources(), R.drawable.group_img);
@@ -1082,35 +1357,53 @@ LocationListener, View.OnClickListener{
 					((ImageView)slidingLayout.findViewById(R.id.main_view_group_img)).setImageBitmap(
 							StaticUtilMethods.getRoundedShape(image));
 
-					Button join = (Button) slidingLayout.findViewById(R.id.main_view_join_btn);
-					if(regId.equalsIgnoreCase(data.getAdmin()))
+					ImageButton join = (ImageButton) slidingLayout.findViewById(R.id.main_view_join_btn);
+					if(!isGroupJoined){
+						if(regId.equalsIgnoreCase(data.getAdmin()))
+							join.setVisibility(View.GONE);
+						else{
+							join.setVisibility(View.VISIBLE);
+							join.setOnClickListener(new View.OnClickListener() {
+
+								@Override
+								public void onClick(View v) {
+									// TODO Auto-generated method stub
+									if(!regId.equalsIgnoreCase(data.getAdmin())){
+										showToast("Join request send.");
+										sendMessage(new String("username" + Constants.VALUE_SEPRATOR 
+												+ mUsername + Constants.KEY_SEPRATOR +
+												"group_id" + Constants.VALUE_SEPRATOR +
+												data.getGroupId() + Constants.KEY_SEPRATOR +
+												"msgId" + Constants.VALUE_SEPRATOR +
+												regId),
+												new String[]{data.getAdmin()},
+												MessagesTypes.GROUP_JOIN_REQUEST);
+									}
+								}
+							});
+						}
+					}
+					else
 						join.setVisibility(View.GONE);
-					else{
-						join.setVisibility(View.VISIBLE);
-						join.setOnClickListener(new View.OnClickListener() {
+
+					if(isGroupJoined){
+						((Button)slidingLayout.findViewById(R.id.main_view_message_send_btn)).setOnClickListener(new View.OnClickListener() {
 
 							@Override
-							public void onClick(View v) {
+							public void onClick(View arg0) {
 								// TODO Auto-generated method stub
-								if(!regId.equalsIgnoreCase(data.getAdmin()))
-									sendMessage(new String("username" + Constants.VALUE_SEPRATOR 
-											+ mUsername + Constants.KEY_SEPRATOR +
-											"msgId" + Constants.VALUE_SEPRATOR +
-											regId),
-											new String[]{data.getAdmin()},
-											MessagesTypes.GROUP_JOIN_REQUEST);
+								// send messages
+								TextView msgView = (TextView) slidingLayout.findViewById(R.id.main_view_message_text);
+								String msg = msgView.getText().toString();
+								if(!TextUtils.isEmpty(msg)){
+									sendMessage(msg, data.getUsers_joined().toArray(new String[]{}), MessagesTypes.RECEIVE_MESSAGE);
+									msgView.setText("");
+									showToast("Message send...");
+								}
 							}
 						});
+						msgLayout.setVisibility(View.VISIBLE);
 					}
-					
-					((Button)slidingLayout.findViewById(R.id.main_view_message_send_btn)).setOnClickListener(new View.OnClickListener() {
-						
-						@Override
-						public void onClick(View arg0) {
-							// TODO Auto-generated method stub
-							// send messages
-						}
-					});
 
 					slidingLayout.setVisibility(View.VISIBLE);
 					//slidingPanel.setSlidingEnabled(true);
@@ -1125,10 +1418,20 @@ LocationListener, View.OnClickListener{
 			//map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 13));
 		}
 
+		public void updateMarkerData(GroupData data){
+			for(Marker marker : allMarkers.keySet()){
+				GroupData group = allMarkers.get(marker);
+				if(group.equals(data)){
+					allMarkers.put(marker, data);
+					return;
+				}
+			}
+		}
+
 	}
 
 	private enum GetRequest{
-		GROUP_REQUEST, USER_PROFILE_REQUEST, DELETE_GROUP_REQUEST;
+		GROUP_REQUEST, DELETE_GROUP_REQUEST;
 	}
 
 }

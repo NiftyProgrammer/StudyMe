@@ -37,10 +37,13 @@ public class StaticUtilMethods {
 	public static String createFetchServerJSON(){
 		JSONObject json = new JSONObject();
 		try {
+			//json.put("model", "SPECIFIC");
 			json.put("model", "COMPLETE");
 			json.put("category", "ACTIVITY");
 			json.put("source", "MOBILE");
 			json.put("type", "ANNOUNCEMENT");
+			//json.put("start", (int)(System.currentTimeMillis() / 1000.0f - (long)(24 * 3600 * 1000)));
+			//json.put("end", (int)(System.currentTimeMillis() / 1000.0f));
 			JSONObject entity1 = new JSONObject();
 			entity1.put("key", "app");
 			entity1.put("value", "study_me");
@@ -82,10 +85,13 @@ public class StaticUtilMethods {
 	}
 
 	public static boolean isBetterLocation(Location location, Location currentBestLocation) {
-		if (currentBestLocation == null) {
-			// A new location is always better than no location
+
+		if(location == null && currentBestLocation == null)
+			return false;
+		else if (currentBestLocation == null)
+			return false;
+		else if (location == null)
 			return true;
-		}
 
 		// Check whether the new location fix is newer or older
 		long timeDelta = location.getTime() - currentBestLocation.getTime();

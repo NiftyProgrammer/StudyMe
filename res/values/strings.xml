@@ -7,8 +7,8 @@
     <string name="username_pref">com.rwth.i10.exercisegroups.username</string>
     <string name="password_pref">com.rwth.i10.exercisegroups.password</string>
     <string name="title_activity_register">RegisterActivity</string>
-	<string name="user_seed">ExErCiseGroUpMeStuDyUsErCreddeNtiaLsUsErNameAnDPasswWorDSEEEd</string>
-    
+    <string name="user_seed">ExErCiseGroUpMeStuDyUsErCreddeNtiaLsUsErNameAnDPasswWorDSEEEd</string>
+
     <!-- gcm strings -->
 
     <string name="gcm_server_base_url">https://android.googleapis.com/gcm/send</string>
@@ -27,5 +27,6 @@
     <string name="create_group_btn_str">Create Group</string>
     <string name="title_activity_main_list">Me Study</string>
     <string name="title_activity_profile">Profile</string>
+    <string name="title_activity_user">Users</string>
 
 </resources>

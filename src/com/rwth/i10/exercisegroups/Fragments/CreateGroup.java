@@ -56,7 +56,6 @@ public class CreateGroup extends Fragment {
 						course.getText().toString(), 
 						"", 0, null
 					);
-				Log.d("group_id", item.getGroup_id() + " id");
 				MainActivity.groupListView.addItem(item);
 				MainActivity.mFragmentManager.popBackStack();
 			}

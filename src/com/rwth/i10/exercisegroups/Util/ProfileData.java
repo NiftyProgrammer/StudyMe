@@ -3,8 +3,9 @@ package com.rwth.i10.exercisegroups.Util;
 public class ProfileData {
 
 	
-	private String username, displayName, msg_id, session, email, desc, status;
-	private int event_id;
+	private String username, displayName, msg_id, session, email, desc;
+	private int status;
+	private long event_id;
 	private boolean publicProfile;
 	
 	public ProfileData() {
@@ -12,7 +13,7 @@ public class ProfileData {
 	}
 	
 	public ProfileData(String username, String session, String email,
-			String desc, String displayName, String status, boolean isPublic) {
+			String desc, String displayName, int status, boolean isPublic) {
 		// TODO Auto-generated constructor stub
 		this.username = username; this.session = session; this.email = email;
 		this.desc = desc; this.displayName = displayName; this.status = status;
@@ -27,7 +28,7 @@ public class ProfileData {
 		this.displayName = displayName;
 	}public void setSession(String session) {
 		this.session = session;
-	}public void setEvent_id(int event_id) {
+	}public void setEvent_id(long event_id) {
 		this.event_id = event_id;
 	}public void setEmail(String email) {
 		this.email = email;
@@ -35,7 +36,7 @@ public class ProfileData {
 		this.desc = desc;
 	}public void setPublicProfile(boolean publicProfile) {
 		this.publicProfile = publicProfile;
-	}public void setStatus(String status) {
+	}public void setStatus(int status) {
 		this.status = status;
 	}
 	
@@ -47,7 +48,7 @@ public class ProfileData {
 		return displayName;
 	}public String getSession() {
 		return session;
-	}public int getEvent_id() {
+	}public long getEvent_id() {
 		return event_id;
 	}public String getEmail() {
 		return email;
@@ -55,7 +56,7 @@ public class ProfileData {
 		return desc;
 	}public boolean isPublicProfile() {
 		return publicProfile;
-	}public String getStatus() {
+	}public int getStatus() {
 		return status;
 	}
 	

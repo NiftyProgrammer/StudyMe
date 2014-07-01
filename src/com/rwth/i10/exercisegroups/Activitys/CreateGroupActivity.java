@@ -17,8 +17,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -55,6 +58,35 @@ public class CreateGroupActivity extends ActionBarActivity {
 		desc = (TextView)findViewById(R.id.create_group_desc);
 		image = (ImageView)findViewById(R.id.create_group_img);
 
+		activity.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			
+			@Override
+			public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+				// TODO Auto-generated method stub
+				if (id == EditorInfo.IME_ACTION_NEXT) {
+					if(!TextUtils.isEmpty(activity.getText()))
+						activity.setError(null);
+					else
+						activity.setError("Group Name required");						
+				}
+				return false;
+			}
+		});
+		
+		course.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			
+			@Override
+			public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+				// TODO Auto-generated method stub
+				if (id == EditorInfo.IME_ACTION_NEXT) {
+					if(!TextUtils.isEmpty(activity.getText()))
+						course.setError(null);
+					else
+						course.setError("Group Course required");						
+				}
+				return false;
+			}
+		});
 
 		((Button)findViewById(R.id.create_group_btn))
 		.setOnClickListener(new View.OnClickListener() {
@@ -72,10 +104,20 @@ public class CreateGroupActivity extends ActionBarActivity {
 				Log.d("Json", json);
 				MainActivity.contextData.post("events/update", json);
 				MainActivity.mFragmentManager.popBackStack();*/
+				if(TextUtils.isEmpty(activity.getText())){
+					activity.setError("Group Name required");
+					return;
+				}
+				else if(TextUtils.isEmpty(course.getText())){
+					course.setText("Group Course required");
+					return;
+				}
+				
 				GroupData item = new GroupData(activity.getText().toString(), course.getText().toString(), "", 0, null);
-				item.setGroup_id(RandomString.randomString(20));
 				item.setDescription(desc.getText().toString());
 				item.setAdmin(MainActivity.regId);
+				item.setGroupId(RandomString.randomString(20));
+				item.setStatus("END");
 
 				//compress image
 				if(imageDrawable != null){
@@ -87,6 +129,7 @@ public class CreateGroupActivity extends ActionBarActivity {
 				
 				MainActivity.groupListView.addItem(item);
 				MainActivity.databaseSourse.createGroup(item);
+				MainActivity.databaseSourse.addNewGroupMessage(item.getGroupId(), "");
 				finish();
 				//MainActivity.mFragmentManager.popBackStack();
 			}
@@ -159,7 +202,7 @@ public class CreateGroupActivity extends ActionBarActivity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.home) {
+		if (id == android.R.id.home) {
 			finish();
 		}
 		return super.onOptionsItemSelected(item);

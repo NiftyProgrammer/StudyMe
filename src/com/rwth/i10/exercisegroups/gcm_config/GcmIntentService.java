@@ -61,8 +61,10 @@ public class GcmIntentService extends IntentService {
 			} else if (GoogleCloudMessaging.
 					MESSAGE_TYPE_MESSAGE.equals(messageType)) {
 				// Post notification of received message.
-				//if(!isActivityRunning())
-				sendNotification("Received: " + extras.toString());
+				if(!isActivityRunning()){
+					sendNotification("Received: " + extras.toString());
+					return;
+				}
 
 				Log.i("Message", "Received: " + extras.toString());
 
@@ -77,6 +79,7 @@ public class GcmIntentService extends IntentService {
 
 				case RECEIVE_MESSAGE:
 				{
+					sendNotification("Received: " + extras.toString());
 					break;
 				}
 
@@ -94,11 +97,17 @@ public class GcmIntentService extends IntentService {
 					Log.d("values", values[0] + "");
 					ProfileData data = new ProfileData();
 					data.setUsername(values[0].split(Constants.VALUE_SEPRATOR)[1]);
-					data.setMsg_id(values[1].split(Constants.VALUE_SEPRATOR)[1]);
-					//MainActivity.addUserRequest(data);
+					String group_id = values[1].split(Constants.VALUE_SEPRATOR)[1];
+					data.setMsg_id(values[2].split(Constants.VALUE_SEPRATOR)[1]);
+					MainActivity.addUserRequest(data, group_id);
 					break;
 				}
-				
+				case NEW_USER_JOINED:
+				{
+					String msg = extras.getString(MessageCategories.MESSAGE.toString());
+					MainActivity.showToast("New user " + msg + " joind group.");
+					break;
+				}
 				default:
 				{
 					MainActivity.fetschGroups();

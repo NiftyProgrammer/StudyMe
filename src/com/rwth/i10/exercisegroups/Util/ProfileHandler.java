@@ -108,7 +108,7 @@ public class ProfileHandler implements MyContextData.Listener{
 						tempData.setMsg_id( msgId );
 						profileData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
 						tempData.setUsername( uname );
-						profileData.setEvent_id( event.optInt( ProfileData.PROFILE_ID ) );
+						profileData.setEvent_id( event.optLong( ProfileData.PROFILE_ID ) );
 						tempData.setEmail( email );
 						tempData.setDesc( description );
 						tempData.setPublicProfile( publicProfile );
@@ -178,7 +178,7 @@ public class ProfileHandler implements MyContextData.Listener{
 		this.contextData.registerPOSTListener(this);
 	}
 		
-	public void deleteProfile(MyContextData contextData, int id){
+	public void deleteProfile(MyContextData contextData, long id){
 		//uploadProfile = true;
 		totalPosts++;
 		try {
@@ -191,7 +191,7 @@ public class ProfileHandler implements MyContextData.Listener{
 			e.printStackTrace();
 		}
 	}
-	public void deleteProfile(int id){
+	public void deleteProfile(long id){
 		deleteProfile(this.contextData, id);
 	}
 	public void updateProfile(){
@@ -246,12 +246,11 @@ public class ProfileHandler implements MyContextData.Listener{
 	
 		totalPosts++;
 				
-		Event event = new Event("UPDATE", "PROFILE", (int)System.currentTimeMillis());
+		Event event = new Event("UPDATE", "PROFILE", (int)(System.currentTimeMillis() / 1000.0f));
 		
 		event.addEntity( new Entity<String>("app", "study_me") );
 		event.addEntity( new Entity<String>("activity", "profile_data") );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_USERNAME, pData.getUsername() ) );
-		event.addEntity( new Entity<Integer>( Constants.PROPERTY_TIMESTAMP, StaticUtilMethods.timestamp() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DISPLAY_NAME, pData.getDisplayName() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_EMAIL, pData.getEmail() ) );
 		event.addEntity( new Entity<String>( ProfileData.PROFILE_DESC, pData.getDesc() ) );
