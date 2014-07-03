@@ -61,7 +61,8 @@ public class RegisterActivity extends ActionBarActivity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
+		if (id == android.R.id.home) {
+			finish();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -69,6 +70,9 @@ public class RegisterActivity extends ActionBarActivity {
 
 
 	private void init(){
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
+		
 		context = this;
 
 		mUsernameView = (EditText) findViewById(R.id.reg_username);

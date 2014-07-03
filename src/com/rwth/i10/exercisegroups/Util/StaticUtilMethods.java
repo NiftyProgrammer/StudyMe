@@ -168,7 +168,7 @@ public class StaticUtilMethods {
 	public static String getDate(long time) {
 		Calendar cal = Calendar.getInstance(Locale.ENGLISH);
 		cal.setTimeInMillis(time);
-		String date = DateFormat.format("dd-MM-yyyy", cal).toString();
+		String date = DateFormat.format("dd-MM-yyyy\nhh:mm", cal).toString();
 		return date;
 	}
 

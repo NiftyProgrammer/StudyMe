@@ -19,14 +19,15 @@
         <FrameLayout
             android:id="@+id/content_frame"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:gravity="center" />
 
         <include
             android:id="@+id/sliding_up_panal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             layout="@layout/main_slideup_panel"
-            android:gravity="center|bottom"
+            android:gravity="top"
             android:visibility="gone" />
     </com.rwth.i10.exercisegroups.Util.SlidingUpPanelLayout>
     <!-- The navigation drawer -->
@@ -48,8 +49,14 @@
                 android:id="@+id/left_drawer_filter"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
                 android:layout_weight="1"
-                android:hint="Filter" >
+                android:background="@drawable/main_edit_text"
+                android:hint="Filter"
+                android:padding="8dp"
+                android:textColor="@android:color/white" >
 
                 <requestFocus />
             </EditText>
@@ -85,7 +92,6 @@
                 android:orientation="vertical" >
 
                 <View
-                    android:id="@+id/splitor_2"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="15dp"
@@ -94,30 +100,56 @@
                     android:orientation="vertical" />
 
                 <LinearLayout
+                    android:id="@+id/left_drawer_profile_change_status"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/main_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:orientation="vertical" >
 
                     <TextView
-                        android:id="@+id/left_drawer_profile_btn"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/main_selector"
-                        android:clickable="true"
-                        android:focusable="true"
+                        android:id="@+id/left_drawer_profile_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
                         android:text="Edit Profile"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-                    <Button
-                        android:id="@+id/left_drawer_profile_change_status"
-                        style="?android:attr/buttonStyleSmall"
+                    <TextView
+                        android:id="@+id/left_drawer_profile_change_status_txt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:drawableStart="#FE4848" />
+                        android:layout_gravity="center_horizontal"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textStyle="italic" />
                 </LinearLayout>
 
                 <View
-                    android:id="@+id/splitor_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="15dp"
+                    android:background="@drawable/splitor_drawable"
+                    android:orientation="vertical" />
+
+                <LinearLayout
+                    android:id="@+id/left_drawer_profile_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/main_selector"
+                    android:clickable="true"
+                    android:focusable="true" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:text="Edit Profile"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                </LinearLayout>
+
+                <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="15dp"
@@ -151,7 +183,6 @@
                 </LinearLayout>
 
                 <View
-                    android:id="@+id/splitor_1"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="15dp"
@@ -189,7 +220,6 @@
                 </LinearLayout>
 
                 <View
-                    android:id="@+id/splitor_4"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="15dp"
@@ -208,7 +238,6 @@
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <View
-                    android:id="@+id/splitor_5"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="15dp"

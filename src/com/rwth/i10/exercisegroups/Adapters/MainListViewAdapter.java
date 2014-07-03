@@ -75,8 +75,23 @@ public class MainListViewAdapter extends BaseAdapter {
 
 	public GroupData getGroupItem(String id){
 		for(GroupData data : groupsList){
-			if(data.getGroupId().equalsIgnoreCase(id))
+			if(data.getGroupSession().equals(id) || data.getGroupId().equals(id)){
+				Location location = MainActivity.mLocation;
+				Address add = StaticUtilMethods.getAddressForLocation(context, location);
+				StringBuilder address = new StringBuilder();
+				if(add != null)
+					for(int i=0; i<add.getMaxAddressLineIndex(); i++)
+						address.append(add.getAddressLine(i) + " ");
+
+
+				if(TextUtils.isEmpty(data.getAdmin()))
+					data.setAdmin(MainActivity.regId);
+				data.setLat(location.getLatitude());
+				data.setLng(location.getLongitude());
+				data.setAddress(address.toString());
+
 				return data;
+			}
 		}
 		return null;
 	}
@@ -111,7 +126,10 @@ public class MainListViewAdapter extends BaseAdapter {
 			}
 		}
 	}
-
+	public static String getCurrentGroup(){
+		return runningGroup;
+	}
+	
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
@@ -156,6 +174,8 @@ public class MainListViewAdapter extends BaseAdapter {
 					removeItem(data);
 					MainActivity.databaseSourse.deleteGroup(data.getGroupId());
 					MainActivity.databaseSourse.removeGroupMsg(data.getGroupId());
+					MainActivity.sendMessage(data.getGroupId() + Constants.VALUE_SEPRATOR + data.getName(), data.getUsers_joined().toArray(new String[]{}), MessagesTypes.GROUP_DISBAND_ACK);
+					
 					//MainActivity.deleteGroupFromServer(data);
 				}
 			}
@@ -190,6 +210,7 @@ public class MainListViewAdapter extends BaseAdapter {
 				}
 				else if(runningGroup.equalsIgnoreCase(data.getGroupSession())){
 					sendEvent("END");
+					MainActivity.databaseSourse.updateGroup(data);
 					runningGroup = null;
 					setStatus(INACTIVE, statusView);
 				}
@@ -228,7 +249,7 @@ public class MainListViewAdapter extends BaseAdapter {
 		if(status.equalsIgnoreCase(INACTIVE))
 			view.setTextColor(Color.parseColor("#FF6969"));
 		else
-			view.setTextColor(Color.parseColor("#B7FAAA"));
+			view.setTextColor(Color.GREEN);//Color.parseColor("#B7FAAA"));
 		view.setText(status);
 	}
 	
@@ -261,7 +282,8 @@ public class MainListViewAdapter extends BaseAdapter {
 
 		Gson g = new Gson();
 		String json = "[" + g.toJson(event) + "]";
-		MainActivity.showToast("\"" + data.getName() + "\" group " + data.getStatus() +  " .");
+		MainActivity.showToast("\"" + data.getName() + "\" group " + (data.getStatus().equalsIgnoreCase("START") 
+				? "active" : "inactive") +  " .");
 		mContextData.post("events/update", json);
 
 	}

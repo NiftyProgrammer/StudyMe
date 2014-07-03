@@ -13,9 +13,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
+        android:layout_margin="8dp"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:background="@drawable/main_edit_text"
         android:hint="@string/create_group_activity_str"
-        android:inputType="textPersonName|textCapWords" >
+        android:inputType="textPersonName|textCapWords"
+        android:padding="8dp"
+        android:textColor="@android:color/black" >
 
         <requestFocus />
     </EditText>
@@ -24,36 +28,40 @@
         android:id="@+id/create_group_course_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/create_group_activity_text"
+        android:layout_alignParentLeft="true"
         android:layout_below="@+id/create_group_activity_text"
+        android:layout_margin="8dp"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:background="@drawable/main_edit_text"
         android:hint="@string/create_group_course_str"
-        android:inputType="textPersonName|textCapWords" />
+        android:inputType="textPersonName|textCapWords"
+        android:padding="8dp"
+        android:textColor="@android:color/black" />
 
     <EditText
         android:id="@+id/create_group_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="6dp"
-        android:layout_marginRight="6dp"
-        android:layout_marginTop="4dp"
-        android:hint="Group Description"
-        android:layout_alignLeft="@+id/create_group_course_text"
+        android:layout_alignParentLeft="true"
         android:layout_below="@+id/create_group_course_text"
+        android:layout_margin="8dp"
+        android:background="@drawable/main_edit_text"
+        android:hint="Group Description"
         android:inputType="textMultiLine|textCapSentences"
         android:lines="4"
-        android:singleLine="false" />
+        android:padding="8dp"
+        android:singleLine="false"
+        android:textColor="@android:color/black" />
 
     <ImageView
         android:id="@+id/create_group_img"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_alignParentRight="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:clickable="true"
         android:layout_below="@+id/create_group_desc"
+        android:background="@drawable/main_selector"
+        android:clickable="true"
+        android:focusable="true"
         android:src="@drawable/group_img" />
 
     <Button
@@ -61,6 +69,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/create_group_desc"
+        android:background="@drawable/main_selector"
         android:text="@string/create_group_btn_str" />
 
 </RelativeLayout>

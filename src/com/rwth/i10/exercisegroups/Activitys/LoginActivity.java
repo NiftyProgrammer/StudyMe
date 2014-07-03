@@ -36,15 +36,6 @@ import de.contextdata.ContextData;
 public class LoginActivity extends Activity implements MyContextData.Listener{
 
 
-	/**
-	 * The default email to populate the email field with.
-	 */
-	//public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
-
-	/**
-	 * Keep track of the login task to ensure we can cancel it if requested.
-	 */
-	//private UserLoginTask mAuthTask = null;
 
 	// Values for email and password at the time of the login attempt.
 	private String mUsername;
@@ -68,10 +59,6 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 		setTitle(getString(R.string.title_activity_login));
 
 		context = this;
-		
-		// Set up the login form.
-		//mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
-		//mUsernameView.setText(mUsername);
 
 		
 		ManagePreferences pref = new ManagePreferences(this);
@@ -101,19 +88,11 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 				mPasswordView.setError(null);
 				return false;
 			}
-		});/*
-		mUsernameView
-		.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView textView, int id,
-					KeyEvent keyEvent) {
-				if(id == EditorInfo.IME_NULL || id == EditorInfo.IME_ACTION_NEXT)
-				mUsernameView.setError(null);
-				return false;
-			}
-		});*/
+		});
 
-
+		/*
+		 * Main Form settings 
+		 * */
 		mLoginFormView = findViewById(R.id.login_form);
 		mLoginStatusView = findViewById(R.id.login_status);
 		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
@@ -137,7 +116,7 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 	}
 
 	/**
-	 * Attempts to sign in or register the account specified by the login form.
+	 * Attempts to sign in the account specified by the login form.
 	 * If there are form errors (invalid email, missing fields, etc.), the
 	 * errors are presented and no actual login attempt is made.
 	 */
@@ -242,40 +221,8 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 		}
 	}
 
-
-	//registering new user
-	private void requestToRegister(){
-		/*AlertDialog dialog = new AlertDialog.Builder(this)
-		.setTitle("User not found.")
-		.setMessage("Would you like to register as new user.")
-		.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				// TODO Auto-generated method stub
-				mPasswordView.setImeActionLabel("Next", EditorInfo.IME_ACTION_NEXT);
-				mPasswordView.setImeOptions(EditorInfo.IME_ACTION_NEXT);
-				mEmailView.setVisibility(View.VISIBLE);
-				mEmailView.requestFocus();
-				dialog.dismiss();
-			}
-		})
-		.setNegativeButton("No", new DialogInterface.OnClickListener() {
-
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				// TODO Auto-generated method stub
-				mPasswordView.setImeActionLabel(getString(R.string.action_sign_in_short), R.id.login);
-				mPasswordView.setImeOptions(EditorInfo.IME_ACTION_UNSPECIFIED);
-				mEmailView.setVisibility(View.GONE);
-				dialog.dismiss();											
-			}
-		})
-		.create();
-		dialog.show();*/
-	}
-
-
+	/**
+	 * get requests from main server*/	
 	@Override
 	public void onGETResult(String result) {
 		// TODO Auto-generated method stub
@@ -313,91 +260,15 @@ public class LoginActivity extends Activity implements MyContextData.Listener{
 	public void onPOSTResult(String result) {
 		// TODO Auto-generated method stub
 
-/*		showProgress(false);
-
-		try {
-			JSONObject object = new JSONObject(result);
-			if(object.optInt("result") > 0){
-				saveCredentials();
-				startActivity(new Intent(LoginActivity.this, MainActivity.class));
-				finish();
-			}
-			else{
-				String reason = object.optString("reason");
-				if(reason.contains("User already exists")){
-					mUsernameView.setError(getString(R.string.error_incorrect_username));
-					mUsernameView.requestFocus();
-				}
-				else if(reason.contains("Wrong data")){
-					mEmailView.setError(getString(R.string.error_invalid_email));
-					mEmailView.requestFocus();
-				}
-			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
 	}
+	
+	
+	/**
+	 * Save credentials after confirming it to shared pref as encripted data*/
 	private void saveCredentials(){
 		ManagePreferences managePreferences = new ManagePreferences(this);
 		managePreferences.savePreferences(getString(R.string.username_pref), mUsername);
 		managePreferences.savePreferences(getString(R.string.password_pref), mPassword);
 		managePreferences.putBoolPreferences(ProfileData.PROFILE_PUBLIC, false);
 	}
-	
-	/**
-	 * Represents an asynchronous login/registration task used to authenticate
-	 * the user.
-	 *//*
-	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			// TODO: attempt authentication against a network service.
-
-			try {
-				// Simulate network access.
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				return false;
-			}
-
-			for (String credential : DUMMY_CREDENTIALS) {
-				String[] pieces = credential.split(":");
-				if (pieces[0].equals(mUsername)) {
-					// Account exists, return true if the password matches.
-					return pieces[1].equals(mPassword);
-				}
-			}
-
-
-			ContextData contextData = new ContextData("http://api.learning-context.de/", 3, mUsername, mPassword, 8, 
-					"fqfc0pqm7rx8940wi40sa0wut6jmqp92vfodhxq1yo8b5vqqm0");
-
-
-
-			// TODO: register the new account here.
-			return true;
-		}
-
-		@Override
-		protected void onPostExecute(final Boolean success) {
-			mAuthTask = null;
-			showProgress(false);
-
-			if (success) {
-				startActivity(new Intent(LoginActivity.this, MainActivity.class));
-				finish();
-			} else {
-				mPasswordView
-						.setError(getString(R.string.error_incorrect_password));
-				mPasswordView.requestFocus();
-			}
-		}
-
-		@Override
-		protected void onCancelled() {
-			mAuthTask = null;
-			showProgress(false);
-		}
-	}*/
 }

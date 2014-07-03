@@ -5,7 +5,5 @@
     android:layout_height="match_parent"
     tools:context="com.rwth.i10.exercisegroups.Activitys.MainActivity"
     tools:ignore="MergeRootFrame" >
-    
- 
-    
+
 </FrameLayout>

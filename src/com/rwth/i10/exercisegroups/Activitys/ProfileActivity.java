@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -48,7 +49,7 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 	private MyAsyncTask sendTask;
 	private TextView _displayName, _email, _description;
 	private View _progressLayout;
-	private ScrollView _mainView;
+	private ViewGroup _mainView;
 	private ImageView _imgView;
 	private ManagePreferences pref;
 	private boolean sendData;
@@ -89,6 +90,7 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 			pref = new ManagePreferences(_context);
 			_progressLayout.setVisibility(View.VISIBLE);
 			_mainView.setVisibility(View.GONE);
+			_newData = _mProfileHandler.getProfileData();
 
 			sendData = false;
 			if( !TextUtils.isEmpty( _displayName.getText() ) && !_displayName.getText().toString().equalsIgnoreCase(_newData.getDisplayName()) ){
@@ -194,14 +196,17 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 		_displayName = (TextView)findViewById(R.id.profile_display_name);
 		_description = (TextView)findViewById(R.id.profile_desc);
 		_email = (TextView)findViewById(R.id.profile_email_address);
-		_mainView = (ScrollView)findViewById(R.id.profile_main_view);
+		_mainView = (ViewGroup)findViewById(R.id.profile_main_view);
 		_progressLayout = findViewById(R.id.profile_progress_layout);
 		_imgView = (ImageView) findViewById(R.id.profile_img);
 
 		String []credentials = StaticUtilMethods.getUserCredentials(_context);
 		_mProfileHandler = new ProfileHandler(_context, credentials[0], credentials[1]);
-		_mProfileHandler.fetschProfileData();
-		_mProfileHandler.setUpdatedId();
+		if(_mProfileHandler.getProfileData().isPublicProfile()){
+			_mProfileHandler = null;
+			_mProfileHandler = new ProfileHandler(_context, getString(R.string.server_username), getString(R.string.server_password));
+		}
+		_mProfileHandler.getPreviousProfile();
 		_newData = MainActivity.mProfileHandler.getProfileData();
 
 		if(!TextUtils.isEmpty(_newData.getDisplayName()))
@@ -234,13 +239,13 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 					}
 				}
 				if(TextUtils.isEmpty(_mProfileHandler.getError())){
-					if( !TextUtils.isEmpty( _displayName.getText() ) && !_displayName.getText().toString().equalsIgnoreCase(_newData.getDisplayName()) ){
+					if( !TextUtils.isEmpty( _displayName.getText() ) ){
 						publishProgress(ProfileData.PROFILE_DISPLAY_NAME, _newData.getDisplayName());
 					}
-					if( !TextUtils.isEmpty( _email.getText() ) && !_email.getText().toString().equalsIgnoreCase(_newData.getEmail()) ){
+					if( !TextUtils.isEmpty( _email.getText() ) ){
 						publishProgress(ProfileData.PROFILE_EMAIL, _newData.getEmail());
 					}
-					if( !TextUtils.isEmpty( _description.getText() ) && !_description.getText().toString().equalsIgnoreCase(_newData.getDesc()) ){
+					if( !TextUtils.isEmpty( _description.getText() ) ){
 						publishProgress(ProfileData.PROFILE_DESC, _newData.getDesc());
 					}
 
@@ -261,7 +266,7 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 			if(result)
 				finish();
 			else{
-				Toast.makeText(_context, "Error while sending: " + MainActivity.mProfileHandler.getError(), 0).show();
+				 MainActivity.showToast("Error while sending: " + MainActivity.mProfileHandler.getError());
 				_progressLayout.setVisibility(View.GONE);
 				_mainView.setVisibility(View.VISIBLE);
 			}

@@ -23,13 +23,13 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="#fff" >
-        
+
         <Button
             android:id="@+id/list_left_drawer_view_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Map View" />
-        
+
         <Button
             android:id="@+id/list_left_drawer_create_group_btn"
             android:layout_width="wrap_content"

@@ -189,6 +189,14 @@ public class GroupsDataSource {
 			return false;
 	}
 	
+	public boolean updateUserStatus(String username, int status){
+		ContentValues contValues = new ContentValues();
+		contValues.put(userAllColumns[3], status);
+		
+		return writeDatabase.update(SQLiteHelper.UTABLE_CREATE, contValues, userAllColumns[0] + " = ?", new String[]{username}) > 0;
+		
+	}
+	
 	public ArrayList<ProfileData> getUserData(String username, String id){
 		ArrayList<ProfileData> data = new ArrayList<ProfileData>();
 		String selection = "", selectionArgs = "";
@@ -240,6 +248,26 @@ public class GroupsDataSource {
 		return cursor.getCount();
 	}
 	
+	public ProfileData getUserData(String username){
+		Cursor cursor = readDatabase.query(
+				SQLiteHelper.UTABLE_CREATE, userAllColumns, SQLiteHelper.UTABLE_NAME + " = ?", 
+				new String[]{String.valueOf(username)}, null, null, null);
+
+		ProfileData user = new ProfileData();
+		if(cursor.moveToNext()){
+			user.setUsername(cursor.getString(cursor.getColumnIndex(SQLiteHelper.UTABLE_NAME)));
+			user.setMsg_id(cursor.getString(cursor.getColumnIndex(SQLiteHelper.UTABLE_MSGID)));
+			user.setStatus(cursor.getInt(cursor.getColumnIndex(SQLiteHelper.UTABLE_STATUS)));
+			user.setSession(cursor.getString(cursor.getColumnIndex(SQLiteHelper.UTABLE_GROUPID)));			
+		}
+		
+		return user;
+	}
+	
+	public boolean deleteUser(String username){
+		return writeDatabase.delete(SQLiteHelper.UTABLE_CREATE, SQLiteHelper.UTABLE_NAME + " = ?", new String[]{username}) > 0;
+	}
+	
 	public boolean addNewGroupMessage(String id, String msgs){
 		
 		ContentValues values = new ContentValues();
@@ -282,7 +310,7 @@ public class GroupsDataSource {
 		}
 		
 		return null;
-	}
+	}		
 	
 	public boolean isGroupMsgExists(String id){
 		Cursor cursor = readDatabase.query(SQLiteHelper.GROUP_MSG_TABLE, groupMsgAllColumns, SQLiteHelper.GROUP_MSG_ID + " = ?", new String[]{id}, null, null, null);

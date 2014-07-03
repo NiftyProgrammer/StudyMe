@@ -1,5 +1,6 @@
 package com.rwth.i10.exercisegroups.Util;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.json.JSONArray;
@@ -32,6 +33,8 @@ public class ProfileHandler implements MyContextData.Listener{
 	private boolean updatedId;
 		
 	private int totalPosts;
+	
+	private ArrayList<Long> tempIds = new ArrayList<Long>();
 	
 	public ProfileHandler(Context context) {
 		// TODO Auto-generated constructor stub
@@ -106,12 +109,17 @@ public class ProfileHandler implements MyContextData.Listener{
 							"profile_data".equalsIgnoreCase(activity) && uname.equalsIgnoreCase(profileData.getUsername()) ){
 						tempData.setDisplayName( disName );
 						tempData.setMsg_id( msgId );
-						profileData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
-						tempData.setUsername( uname );
-						profileData.setEvent_id( event.optLong( ProfileData.PROFILE_ID ) );
+						tempData.setUsername( uname );						
 						tempData.setEmail( email );
 						tempData.setDesc( description );
 						tempData.setPublicProfile( publicProfile );
+						
+						profileData.setSession( event.optString( ProfileData.PROFILE_SESSION ) );
+						try {
+							profileData.setEvent_id( Long.parseLong(event.optString( ProfileData.PROFILE_ID )) );
+							tempIds.add(profileData.getEvent_id());
+							Log.d("Profile Id", profileData.getEvent_id() + "");
+						} catch (NumberFormatException e) {}
 						
 						setProfileData(tempData);
 					}
@@ -152,6 +160,12 @@ public class ProfileHandler implements MyContextData.Listener{
 		}
 	}
 	
+	public void deleteAllPrevious(){
+		for(int i=0; i<tempIds.size(); i++){
+			deleteProfile(tempIds.get(i));
+		}
+	}
+	
 	public boolean getProcessFinished(){
 		return processFinished;
 	}
@@ -162,7 +176,7 @@ public class ProfileHandler implements MyContextData.Listener{
 		processFinished = false;
 		error = null;
 	}
-	public void setUpdatedId(){
+	public void setUpdatedId(boolean isUploaded){
 		updatedId = false;
 	}
 	public void setDeleteProfile(){
@@ -202,8 +216,9 @@ public class ProfileHandler implements MyContextData.Listener{
 		}
 		else{
 			deleteAfterwords = false;
-			deleteProfile(profileData.getEvent_id());
+			deleteAllPrevious();
 			uploadProfile(profileData);
+			
 		}
 			
 	}
@@ -299,21 +314,27 @@ public class ProfileHandler implements MyContextData.Listener{
 		JSONObject event = new JSONObject();
 		try {
 			event.put("model", "COMPLETE");
-			event.put("category", "ACTIVITY");
+			event.put("category", "ENVIRONMENT");
 			event.put("source", "MOBILE");
 			event.put("type", "PROFILE");
 			
 			JSONObject entity1 = new JSONObject();
 			JSONObject entity2 = new JSONObject();
+			JSONObject entity3 = new JSONObject();
+			
 			entity1.put("key", "app");
 			entity1.put("value", "study_me");
 			
 			entity2.put("key", "activity");
 			entity2.put("value", "profile_data");
 			
+			entity3.put("key", ProfileData.PROFILE_USERNAME);
+			entity3.put("value", profileData.getUsername());
+			
 			JSONArray array = new JSONArray();
 			array.put(entity1);
 			array.put(entity2);
+			array.put(entity3);
 			
 			event.put("entities", array);
 			
@@ -321,6 +342,7 @@ public class ProfileHandler implements MyContextData.Listener{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		Log.d("get String", event.toString());
 		return event.toString();
 	}
 		

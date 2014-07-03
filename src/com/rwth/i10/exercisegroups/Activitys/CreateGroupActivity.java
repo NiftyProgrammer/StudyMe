@@ -51,6 +51,8 @@ public class CreateGroupActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fragment_create_group);
 
+		
+		//setting up all views
 		context = this;
 
 		activity = (TextView)findViewById(R.id.create_group_activity_text);
@@ -94,16 +96,6 @@ public class CreateGroupActivity extends ActionBarActivity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				/*Event event = new Event("END", "ANNOUNCEMENT", (int)System.currentTimeMillis());
-				event.setSession(RandomString.randomString(20));
-				event.addEntity(new Entity<String>("app", "study_me"));
-				event.addEntity(new Entity<String>("group_activity", activity.getText().toString()));
-				event.addEntity(new Entity<String>("group_course", course.getText().toString()));
-				Gson g = new Gson();
-				String json = "[" + g.toJson(event) + "]";
-				Log.d("Json", json);
-				MainActivity.contextData.post("events/update", json);
-				MainActivity.mFragmentManager.popBackStack();*/
 				if(TextUtils.isEmpty(activity.getText())){
 					activity.setError("Group Name required");
 					return;
@@ -203,7 +195,7 @@ public class CreateGroupActivity extends ActionBarActivity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == android.R.id.home) {
-			finish();
+			finish();							//finish activity when home button on menubar is selected
 		}
 		return super.onOptionsItemSelected(item);
 	}	

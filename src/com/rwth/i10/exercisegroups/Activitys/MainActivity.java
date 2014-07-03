@@ -1,6 +1,7 @@
 package com.rwth.i10.exercisegroups.Activitys;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,7 +16,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -54,6 +57,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -99,14 +103,35 @@ public class MainActivity extends ActionBarActivity implements MyContextData.Lis
 LocationListener, View.OnClickListener{
 
 
+	/**
+	 * Main list to be displayed in sliding nevigational bar */
 	public static MainListViewAdapter groupListView;
+	
+	/**Main view fragment to be used to display all the main activity*/
 	public static FragmentManager mFragmentManager;
+	
+	/**
+	 * Database connection sourse*/
 	public static GroupsDataSource databaseSourse;
+	
+	/**
+	 * flag set from other applications to close application*/
 	public static boolean closeApplication;
+	
+	/**
+	 * Server connection handler to connecet to ContextData server*/
 	public static MyContextData serverHandler = null;
-	/*public static ContextData userHandler = null;*/
+
+	/**
+	 * Used to store users location and later uses it*/
 	public static Location mLocation;
+	
+	/**
+	 * Used to store user editdata and later use it to send data to other users*/
 	public static ProfileHandler mProfileHandler;
+	
+	/**
+	 * Main gcm registration id*/
 	public static String regId;
 
 
@@ -117,11 +142,18 @@ LocationListener, View.OnClickListener{
 	private static GoogleMap map;	
 	private static SupportMapFragment mapFragment;
 	private GoogleCloudMessaging gcm;
-	private AtomicInteger msgId = new AtomicInteger();
+
+
+	/**
+	 * used to store string got from server about groups*/
 	private static String allGroupsString;
-
-
+	
+	/**
+	 * used to store status of get request send to server*/
 	private static GetRequest getRequest;
+	
+	/**
+	 * varialbes used to create and update LeftSliding drawer*/
 	private static ActionBarDrawerToggle mActionBarDrawerToggle;
 	private static DrawerLayout mDrawerLayout;
 	private static View LeftDrawer;
@@ -146,6 +178,8 @@ LocationListener, View.OnClickListener{
 		context = this;
 		mainInstance = this;
 
+		/**
+		 * for first time there is no data, os just used to get updated server data.*/
 		boolean firstLogin = false;
 		Bundle bundle = getIntent().getExtras();
 		if(bundle != null && bundle.containsKey("com.rwth.i10.labproject.firstlogin")){
@@ -285,6 +319,9 @@ LocationListener, View.OnClickListener{
 
 	}
 
+	
+	/**
+	 * Used to check play services version for map to play*/
 	private boolean checkPlayServices() {
 		int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
 		if (resultCode != ConnectionResult.SUCCESS) {
@@ -300,28 +337,31 @@ LocationListener, View.OnClickListener{
 		return true;
 	}
 
+	
+	/**
+	 * Initialize user all main views*/
 	private void init(boolean firstLogin){
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
 
+		//database resourses
 		databaseSourse = new GroupsDataSource(context);
 		databaseSourse.open();
 
 		closeApplication = false;
 
 
+		//getting user credentials from pref
 		String []credentials = StaticUtilMethods.getUserCredentials(context);
 		mUsername = credentials[0];
 		mPassword = credentials[1];
 
+		//server handler to handle server main account.
 		serverHandler = ServerHandler.createInstance(getString(R.string.server_username), getString(R.string.server_password));
 		serverHandler.registerGETListener(this);
 		serverHandler.registerPOSTListener(this);
 		serverHandler.setTimeout(60000 * 2);
 
-		/*userHandler = ServerHandler.createInstance(mUsername, mPassword);
-		userHandler.registerGETListener(this);
-		userHandler.registerPOSTListener(this);*/
 
 		mProfileHandler = new ProfileHandler(context, mUsername, mPassword);
 		if(firstLogin)
@@ -336,7 +376,7 @@ LocationListener, View.OnClickListener{
 			int prevTime = getPreviousRevisedVersion(context);
 			int currentTime = (int)(System.currentTimeMillis() / 1000.0f);
 			Log.d("RegId", "prev Id: " + regId);
-			if (firstLogin || (TextUtils.isEmpty(regId) && Math.abs(currentTime - prevTime) > 86400000)) {		//if id is older then day
+			if (firstLogin || (TextUtils.isEmpty(regId) || Math.abs(currentTime - prevTime) > 86400000)) {		//if id is older then day
 				registerInBackground();
 			}
 		}
@@ -349,6 +389,10 @@ LocationListener, View.OnClickListener{
 		mLocation = mLocationManager.getLastKnownLocation(provider);
 		mLocationManager.requestLocationUpdates(provider, StaticUtilMethods.TWO_MINUTES, 0, this);
 	}
+	
+	
+	/**
+	 * Used to get msg registration id from preferences*/
 	private String getRegistrationId(Context context) {
 		final ManagePreferences prefs = new ManagePreferences(context);
 		String registrationId = prefs.getStringPreferences(Constants.PROPERTY_REG_ID, "");
@@ -366,6 +410,9 @@ LocationListener, View.OnClickListener{
 		}
 		return registrationId;
 	}
+	
+	/**
+	 * get previous msg id version number */
 	private int getPreviousRevisedVersion(Context context){
 		ManagePreferences prefs = new ManagePreferences(context);
 		return prefs.getIntPreferences(Constants.PROPERTY_REG_ID_DATE, (int)(System.currentTimeMillis() / 1000.0f));
@@ -380,6 +427,9 @@ LocationListener, View.OnClickListener{
 			throw new RuntimeException("Could not get package name: " + e);
 		}
 	}
+	
+	/**
+	 * Get msg id from server in background */
 	private void registerInBackground() {
 		new AsyncTask<Void, Void, Void>(){
 			@Override
@@ -411,6 +461,8 @@ LocationListener, View.OnClickListener{
 		}.execute();
 	}
 
+	/**
+	 * Store msg registration id in preferences. */
 	private void storeRegistrationId(Context context, String regId) {
 		ManagePreferences pref = new ManagePreferences(context);
 		int appVersion = getAppVersion(context);
@@ -419,6 +471,8 @@ LocationListener, View.OnClickListener{
 		pref.putIntPreferences(Constants.PROPERTY_APP_VERSION, appVersion);
 	}
 
+	/**
+	 * used to get previously created groups that the user have created */
 	private void getDatabaseGroups(){
 		new AsyncTask<Void, Void, ArrayList<GroupData>>(){
 			private Cursor cursor = null;
@@ -458,6 +512,8 @@ LocationListener, View.OnClickListener{
 		}.execute();
 	}
 
+	/**
+	 * checks if new location is within our desired group data */
 	private boolean isWithinDistance(double groupLat, double groupLng){
 		if(mLocation == null)
 			return false;
@@ -475,8 +531,8 @@ LocationListener, View.OnClickListener{
 		return dist < 50;
 	}
 
-
-
+	/**
+	 * get users joined requests from database. */
 	private static void getDatabaseUsersJoinReq(){
 		new AsyncTask<Void, Void, Integer>(){
 			@Override
@@ -495,12 +551,16 @@ LocationListener, View.OnClickListener{
 		}.execute();
 	}	
 
-
+	/**
+	 * send message to server class and forward it to user. */
 	private static void sendMessageToServer(Map<String, String> params, List<String> ids, MessagesTypes type){
 		GcmServer server = new GcmServer();
 		server.sendMessage(params, ids, type, context);
 	}
 
+	
+	/**
+	 * to delete specific group from server */
 	public static void deleteGroupFromServer(GroupData group){
 		getRequest = GetRequest.DELETE_GROUP_REQUEST;
 
@@ -547,6 +607,8 @@ LocationListener, View.OnClickListener{
 
 	}
 
+	/**
+	 * fetsch latest groups from server for map update. */
 	public static void fetschGroups(){
 		Handler mainHandler = new Handler(Looper.getMainLooper());
 		mainHandler.post(new Runnable() {
@@ -562,6 +624,10 @@ LocationListener, View.OnClickListener{
 		isRefresh = true;
 		serverHandler.get("events/show", StaticUtilMethods.createFetchServerJSON());
 	}
+	
+	
+	/**
+	 * user call funtion for sending message*/
 	public static void sendMessage(String message, String []ids, final MessagesTypes type){
 
 		final HashMap<String, String> params = new HashMap<String, String>();
@@ -589,6 +655,7 @@ LocationListener, View.OnClickListener{
 			retrive.put("entities", new JSONArray().put(entity1).put(entity2));
 		} catch (JSONException e) {}
 
+		// if ids are null then get its from server to send it 
 		MyContextData myContext = ServerHandler.createInstance(context.getString(R.string.server_username), context.getString(R.string.server_password));
 		myContext.setTimeout(60000 *2);
 		myContext.registerGETListener(new MyContextData.Listener() {
@@ -644,6 +711,8 @@ LocationListener, View.OnClickListener{
 
 	}
 
+	/**
+	 * Hides/deletes user profile from main server account */
 	public static void hideUserProfile(){
 		new AsyncTask<Void, Void, Long>(){
 			private ProfileHandler mServerProfile;
@@ -651,6 +720,7 @@ LocationListener, View.OnClickListener{
 				mServerProfile = new ProfileHandler(context, context.getString(R.string.server_username),
 						context.getString(R.string.server_password));
 				mServerProfile.getPreviousProfile();
+				mServerProfile.setUpdatedId(true);
 			}
 
 			@Override
@@ -670,6 +740,8 @@ LocationListener, View.OnClickListener{
 		}.execute();
 	}
 
+	/**
+	 * put markers of filtered group on map */
 	private void setFilteredGroups(ArrayList<JSONObject> array){
 
 		SetMarkers marks = new SetMarkers();		
@@ -684,7 +756,8 @@ LocationListener, View.OnClickListener{
 		marks.onPostExecute(null);
 	}
 
-		
+	/**
+	 * get group data from previously downloaded data*/
 	private static long getPreviousGroupData(GroupData group){
 		JSONArray events = null;
 		try {
@@ -733,37 +806,18 @@ LocationListener, View.OnClickListener{
 		return groupId;
 	}
 
+	/**
+	 * adds user in group list */
 	private static void addUserInGroup(String group_id, ProfileData data){
 
 		data.setStatus(UserStatus.JOIN_REQUEST.ordinal());
 		data.setPublicProfile(false);
 		databaseSourse.createUser(data, group_id);			//add user in database
 
-		//add user in arraylist
-		GroupData group = groupListView.getGroupItem(group_id);
-		if(group != null){
-			group.addUsers_joined(data.getUsername() + Constants.VALUE_SEPRATOR + data.getMsg_id());
-			groupListView.updateGroup(group);
-			mainInstance.new SetMarkers().updateMarkerData(group);
-
-			/*//delete previous group from server and upload new user
-			try {
-				long prevId = getPreviousGroupData(group);
-				serverHandler.post("events/delete", new JSONObject().put("id", prevId).toString());
-			} catch (JSONException e) {}
-			 */
-			//sending new group data.
-			group.setStatus("UPDATE");
-
-
-			//send from user activity when permitted.
-			//MainListViewAdapter.sendGroupData(group);
-
-			//send msg to others when user is joined
-			//sendMessage(data.getUsername(), group.getUsers_joined().toArray(new String[]{}), MessagesTypes.NEW_USER_JOINED);
-		}
 	}
 
+	/**
+	 * adds user in list and updates markers to it */
 	public static void addUserRequest(ProfileData data, String group_id){
 
 
@@ -771,47 +825,17 @@ LocationListener, View.OnClickListener{
 
 		getDatabaseUsersJoinReq();
 
-		/*JSONObject event = new JSONObject();
-		try {
-			event.put("model", "COMPLETE");
-			event.put("category", "ACTIVITY");
-			event.put("source", "MOBILE");
-			event.put("type", "PROFILE");
-
-			JSONObject entity1 = new JSONObject();
-			JSONObject entity2 = new JSONObject();
-			JSONObject entity3 = new JSONObject();
-
-			entity1.put("key", "app");
-			entity1.put("value", "study_me");
-
-			entity2.put("key", "activity");
-			entity2.put("value", "profile_data");
-
-			entity3.put("key", ProfileData.PROFILE_USERNAME);
-			entity3.put("value", data.getUsername());
-
-			JSONArray array = new JSONArray();
-			array.put(entity1);
-			array.put(entity2);
-			array.put(entity3);
-
-			event.put("entities", array);
-
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		getRequest = GetRequest.USER_PROFILE_REQUEST;
-		serverHandler.get("event/show", event.toString());*/
-
 	}
 
+	/**
+	 * get username for other classes*/
 	public static String getUsername(){
 		return mUsername;
 	}
 	
+	
+	/**
+	 * show toast on screen even from other classes. */
 	public static void showToast(String msg){
 		LayoutInflater inflator = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = inflator.inflate(R.layout.toast_layout, null);
@@ -829,12 +853,14 @@ LocationListener, View.OnClickListener{
 		Log.i("Message", msg);
 	}
 
-	public static void addGroupMessage(GroupData data, String msg){
-
+	/**
+	 * gets the group data from current downloaded data. */
+	public static GroupData getGroupCurrentData(String id){
+		return groupListView.getGroupItem(id);
 	}
 
 	/**
-	 * A placeholder fragment containing a simple view.
+	 * A placeholder fragment containing a for all mainview intilizations.
 	 */
 	public static class PlaceholderFragment extends Fragment {
 
@@ -886,7 +912,7 @@ LocationListener, View.OnClickListener{
 					startActivity(new Intent(context, MainListActivity.class));										
 				}
 			});*/
-			((TextView)rootView.findViewById(R.id.left_drawer_profile_btn)).setOnClickListener(new View.OnClickListener() {
+			((ViewGroup)rootView.findViewById(R.id.left_drawer_profile_btn)).setOnClickListener(new View.OnClickListener() {
 
 				@Override
 				public void onClick(View v) {
@@ -895,8 +921,16 @@ LocationListener, View.OnClickListener{
 					startActivity(new Intent(context, ProfileActivity.class));
 				}
 			});
-			Button profileBtn = (Button)rootView.findViewById(R.id.left_drawer_profile_change_status);
-			profileBtn.setBackgroundColor(mProfileHandler.getProfileData().isPublicProfile() ? Color.GREEN : Color.RED);
+
+			final TextView profileStatus = (TextView)rootView.findViewById(R.id.left_drawer_profile_change_status_txt);
+			ViewGroup profileBtn = (ViewGroup)rootView.findViewById(R.id.left_drawer_profile_change_status);
+			profileStatus.setTextColor(	mProfileHandler.getProfileData().isPublicProfile() ? Color.GREEN : Color.RED);
+			profileStatus.setText(mProfileHandler.getProfileData().isPublicProfile() ? "Public" : "Invisible");
+			
+			((TextView)rootView.findViewById(R.id.left_drawer_profile_txt)).setText(
+					TextUtils.isEmpty(mProfileHandler.getProfileData().getDisplayName()) ? 
+							mUsername : mProfileHandler.getProfileData().getDisplayName());
+			
 			profileBtn.setOnClickListener(new View.OnClickListener() {
 
 				@Override
@@ -906,23 +940,24 @@ LocationListener, View.OnClickListener{
 						new ManagePreferences(context).putBoolPreferences(ProfileData.PROFILE_PUBLIC, false);
 						mProfileHandler.getProfileData().setPublicProfile(false);
 						hideUserProfile();
-						((Button)arg0).setBackgroundColor(Color.RED);
 					}
 					else{
 						new ManagePreferences(context).putBoolPreferences(ProfileData.PROFILE_PUBLIC, true);
 						mProfileHandler.getProfileData().setPublicProfile(true);
 						mProfileHandler.uploadProfile(serverHandler);
-						((Button)arg0).setBackgroundColor(Color.GREEN);
 					}					
+
+					profileStatus.setTextColor(	mProfileHandler.getProfileData().isPublicProfile() ? Color.GREEN : Color.RED);
+					profileStatus.setText(mProfileHandler.getProfileData().isPublicProfile() ? "Public" : "Invisible");
 				}
 			});
 			((ImageButton)rootView.findViewById(R.id.left_drawer_filter_btn)).setOnClickListener(mainInstance);
 			((TextView)rootView.findViewById(R.id.left_drawer_logout)).setOnClickListener(mainInstance);
 			((LinearLayout)rootView.findViewById(R.id.left_drawer_users_layout)).setOnClickListener(mainInstance);
 
-			//slidingPanel.collapsePanel();
+			slidingPanel.collapsePanel();
 			slidingPanel.setPanelHeight(0);
-			slidingPanel.hidePanel();
+			//slidingPanel.hidePanel();
 			slidingPanel.setEnableDragViewTouchEvents(true);
 			//slidingPanel.setSlidingEnabled(false);
 			slidingLayout.setVisibility(View.GONE);
@@ -967,6 +1002,8 @@ LocationListener, View.OnClickListener{
 	}
 
 
+	/**
+	 * some of on click listeners. */
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
@@ -1052,19 +1089,40 @@ LocationListener, View.OnClickListener{
 
 		case R.id.left_drawer_logout:
 		{
-			ManagePreferences prefs = new ManagePreferences(context);
-			prefs.removePreferences();
-			prefs.removePreferences(
-					getString(R.string.password_pref), 
-					getString(R.string.username_pref),
-					ProfileData.PROFILE_PUBLIC, 
-					Constants.PROPERTY_REG_ID, 
-					Constants.PROPERTY_PROFILE_SESSION, 
-					Constants.PROPERTY_REG_ID_DATE);
-			context.deleteDatabase(SQLiteHelper.DATABASE_NAME);
+			AlertDialog dialog = new AlertDialog.Builder(context)
+									.setTitle("Logout")
+									.setMessage("Do you want to logout this account.")
+									.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+										
+										@Override
+										public void onClick(DialogInterface arg0, int arg1) {
+											// TODO Auto-generated method stub
+											ManagePreferences prefs = new ManagePreferences(context);
+											prefs.removePreferences();
+											prefs.removePreferences(
+													getString(R.string.password_pref), 
+													getString(R.string.username_pref),
+													ProfileData.PROFILE_PUBLIC, 
+													Constants.PROPERTY_REG_ID, 
+													Constants.PROPERTY_PROFILE_SESSION, 
+													Constants.PROPERTY_REG_ID_DATE);
+											context.deleteDatabase(SQLiteHelper.DATABASE_NAME);
 
-			startActivity(new Intent(context, LoginActivity.class));
-			finish();
+											startActivity(new Intent(context, LoginActivity.class));
+											finish();
+										}
+									})
+									.setNegativeButton("No", new DialogInterface.OnClickListener() {
+										
+										@Override
+										public void onClick(DialogInterface dialog, int which) {
+											// TODO Auto-generated method stub
+											dialog.cancel();
+										}
+									})
+									.setCancelable(true)
+									.create();
+			dialog.show();
 			break;
 		}
 
@@ -1078,6 +1136,8 @@ LocationListener, View.OnClickListener{
 		}
 	}
 
+	/**
+	 * get results from server like groups, profiles etc. */
 	@Override
 	public void onGETResult(String result) {
 		// TODO Auto-generated method stub
@@ -1163,6 +1223,8 @@ LocationListener, View.OnClickListener{
 	}
 
 
+	/**
+	 * Marker class to read downloaded string and displays the markers on map */
 	private class SetMarkers extends AsyncTask<String, JSONObject, Void>{
 
 		@Override
@@ -1197,6 +1259,7 @@ LocationListener, View.OnClickListener{
 				} catch (InterruptedException e) {}
 			}
 
+			//read all groups and 
 			if(events != null){
 				LinkedHashMap<String, JSONObject> statedGroups = new LinkedHashMap<String, JSONObject>();
 				LinkedHashMap<String, JSONObject> updatedGroups = new LinkedHashMap<String, JSONObject>();
@@ -1273,6 +1336,15 @@ LocationListener, View.OnClickListener{
 							data.setAdmin(entitiy.optString("value"));
 						else if("group_id".equalsIgnoreCase(entitiy.optString("key")))
 							data.setGroupId(entitiy.optString("value"));
+						else if("joined_users".equalsIgnoreCase(entitiy.optString("key"))){
+							String listString = entitiy.optString("value");
+							listString = listString.replace("[", "");
+							listString = listString.replace("]", "");
+							if(!TextUtils.isEmpty(listString)){
+								ArrayList<String> val = new ArrayList<String>(Arrays.asList(listString.substring(0, listString.length()-1).split(", \\s*")));
+								data.setUsers_joined(val);
+							}
+						}
 						else if("lat".equalsIgnoreCase(entitiy.optString("key")))
 							try {
 								data.setLat(Double.parseDouble(String.valueOf(entitiy.opt("value"))));
@@ -1341,27 +1413,23 @@ LocationListener, View.OnClickListener{
 				public void onInfoWindowClick(Marker marker) {
 					// TODO Auto-generated method stub
 					final GroupData data = allMarkers.get(marker);
-					((TextView)slidingLayout.findViewById(R.id.main_view_group_name)).setText(data.getName());
-					((TextView)slidingLayout.findViewById(R.id.main_view_group_address)).setText(Html.fromHtml(data.getAddress()));
-					((TextView)slidingLayout.findViewById(R.id.main_view_group_course)).setText(data.getCourse());
-					((TextView)slidingLayout.findViewById(R.id.main_view_group_date)).setText( StaticUtilMethods.getDate( data.getTimestamp() ) );
-					((TextView)slidingLayout.findViewById(R.id.main_view_group_desc)).setText( data.getDescription() );
+					
 
-					ViewGroup msgLayout = (ViewGroup) slidingLayout.findViewById(R.id.main_view_message_layout);
+					final ViewGroup msgLayout = (ViewGroup) slidingLayout.findViewById(R.id.main_view_message_layout);
 					boolean isGroupJoined = databaseSourse.isGroupMsgExists(data.getGroupId());
 
 					Bitmap image = data.getImage();
 					if(data.getImage() == null){
 						image = BitmapFactory.decodeResource(getResources(), R.drawable.group_img);
 					}
+					
+					
+					
 					((ImageView)slidingLayout.findViewById(R.id.main_view_group_img)).setImageBitmap(
 							StaticUtilMethods.getRoundedShape(image));
 
-					ImageButton join = (ImageButton) slidingLayout.findViewById(R.id.main_view_join_btn);
-					if(!isGroupJoined){
-						if(regId.equalsIgnoreCase(data.getAdmin()))
-							join.setVisibility(View.GONE);
-						else{
+					ViewGroup join = (ViewGroup) slidingLayout.findViewById(R.id.main_view_join_btn);
+					if(!isGroupJoined && !regId.equalsIgnoreCase(data.getAdmin())){
 							join.setVisibility(View.VISIBLE);
 							join.setOnClickListener(new View.OnClickListener() {
 
@@ -1370,47 +1438,89 @@ LocationListener, View.OnClickListener{
 									// TODO Auto-generated method stub
 									if(!regId.equalsIgnoreCase(data.getAdmin())){
 										showToast("Join request send.");
-										sendMessage(new String("username" + Constants.VALUE_SEPRATOR 
-												+ mUsername + Constants.KEY_SEPRATOR +
-												"group_id" + Constants.VALUE_SEPRATOR +
-												data.getGroupId() + Constants.KEY_SEPRATOR +
-												"msgId" + Constants.VALUE_SEPRATOR +
+										sendMessage(new String( 
+												mUsername + Constants.VALUE_SEPRATOR +
+												data.getGroupId() + Constants.VALUE_SEPRATOR +
 												regId),
 												new String[]{data.getAdmin()},
 												MessagesTypes.GROUP_JOIN_REQUEST);
 									}
 								}
 							});
-						}
+						
 					}
-					else
+					else{
+						new SetGroupMessages((ViewGroup) slidingLayout.findViewById(R.id.main_view_messages_list)).execute(data.getGroupId());
 						join.setVisibility(View.GONE);
+					}
 
 					if(isGroupJoined){
-						((Button)slidingLayout.findViewById(R.id.main_view_message_send_btn)).setOnClickListener(new View.OnClickListener() {
+						Button sendbutton = (Button)slidingLayout.findViewById(R.id.main_view_message_send_btn);
+						sendbutton.setOnClickListener(new View.OnClickListener() {
 
 							@Override
 							public void onClick(View arg0) {
 								// TODO Auto-generated method stub
 								// send messages
-								TextView msgView = (TextView) slidingLayout.findViewById(R.id.main_view_message_text);
+								TextView msgView = (TextView) msgLayout.findViewById(R.id.main_view_message_text);
 								String msg = msgView.getText().toString();
 								if(!TextUtils.isEmpty(msg)){
-									sendMessage(msg, data.getUsers_joined().toArray(new String[]{}), MessagesTypes.RECEIVE_MESSAGE);
+									ArrayList<String> list = data.getUsers_joined();
+									ArrayList<String> array = new ArrayList<String>();
+									for(int i=0; i<list.size(); i++){
+										String []vals = list.get(i).split(Constants.VALUE_SEPRATOR);
+										if(vals != null && !vals[0].equalsIgnoreCase(mUsername))
+											array.add(vals[1]);
+									}
+									if(!data.getAdmin().equalsIgnoreCase(regId))
+										array.add(data.getAdmin());
+									
+									sendMessage(data.getGroupId() + Constants.KEY_SEPRATOR + mUsername + Constants.VALUE_SEPRATOR + msg, array.toArray(new String[]{}), MessagesTypes.RECEIVE_MESSAGE);
+									databaseSourse.addNewGroupMessages(data.getGroupId(), mUsername + Constants.VALUE_SEPRATOR + msg);
+									new SetGroupMessages((ViewGroup) slidingLayout.findViewById(R.id.main_view_messages_list)).execute(data.getGroupId());
 									msgView.setText("");
 									showToast("Message send...");
 								}
 							}
 						});
 						msgLayout.setVisibility(View.VISIBLE);
+						((ViewGroup) slidingLayout.findViewById(R.id.main_view_group_users)).setVisibility(View.VISIBLE);
 					}
+					else{
+						((ViewGroup) slidingLayout.findViewById(R.id.main_view_group_users)).setVisibility(View.GONE);
+						msgLayout.setVisibility(View.GONE);
+					}
+					
+					ArrayAdapter<String> users = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1){
+						@Override
+						public void notifyDataSetInvalidated() {
+							// TODO Auto-generated method stub
+							ViewGroup viewgroup = (ViewGroup) slidingLayout.findViewById(R.id.main_view_group_users);
+							viewgroup.removeAllViews();
+							for(int i=0; i<getCount(); i++)
+								viewgroup.addView(getView(i, null, null));
+							viewgroup.invalidate();
+						}
+					};
+					ArrayList<String> jusers = data.getUsers_joined();
+					for(int u=0; u<jusers.size(); u++){
+						String []vals = jusers.get(u).split(Constants.VALUE_SEPRATOR);
+						if(vals != null && vals.length > 0)
+							users.add(vals[0]);
+					}
+					//users.notifyDataSetInvalidated();
 
+					try {
+						((TextView)slidingLayout.findViewById(R.id.main_view_group_address)).setText(new String(data.getAddress().getBytes("ISO-8859-1"), "UTF-8"));
+					} catch (UnsupportedEncodingException e) {}
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_name)).setText(data.getName());
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_course)).setText(data.getCourse());
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_date)).setText( StaticUtilMethods.getDate( data.getTimestamp() ) );
+					((TextView)slidingLayout.findViewById(R.id.main_view_group_desc)).setText( data.getDescription() );
+					
+					
 					slidingLayout.setVisibility(View.VISIBLE);
-					//slidingPanel.setSlidingEnabled(true);
-					if(slidingPanel.isPanelAnchored() || slidingPanel.isPanelExpanded() || 
-							!slidingPanel.isPanelHidden())
-						slidingPanel.showPanel();
-
+					
 					slidingPanel.setAnchorPoint(0.7f);
 					slidingPanel.expandPanel(0.7f);
 				}
@@ -1430,6 +1540,85 @@ LocationListener, View.OnClickListener{
 
 	}
 
+	private class SetGroupMessages extends AsyncTask<String, String, Void>{
+		private MessageAdapter adapter;
+		private ViewGroup mainView;
+		private String msg = "";
+		
+		public SetGroupMessages(ViewGroup mainView) {
+			// TODO Auto-generated constructor stub
+			this.mainView = mainView; 
+			this.adapter = new MessageAdapter(context, android.R.layout.simple_list_item_1, mainView); 
+		}
+		
+		
+		@Override
+		protected Void doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			msg = params[0];
+			String messages = databaseSourse.getGroupMsg(msg);
+			if(TextUtils.isEmpty(messages))
+				return null;
+			
+			String []msgs = messages.split(Constants.KEY_SEPRATOR);
+			for(int i=0; i<msgs.length; i++){
+				String []vals = msgs[i].split(Constants.VALUE_SEPRATOR);
+				if(vals != null && vals.length > 1){
+					String msg = vals[0] + ": " + vals[1];
+					publishProgress(msg);
+				}
+			}
+			
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onProgressUpdate(String... values) {
+			// TODO Auto-generated method stub
+			adapter.add(values[0]);			
+			adapter.notifyDataSetInvalidated();
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			// TODO Auto-generated method stub
+			if(slidingPanel.isPanelAnchored() || slidingPanel.isPanelExpanded()){
+				this.cancel(true);
+				new SetGroupMessages(mainView).execute(msg);
+			}
+			else
+				return;
+		}
+		
+	}
+
+	private class MessageAdapter extends ArrayAdapter<String>{
+
+		private ViewGroup mainView;
+		
+		public MessageAdapter(Context context, int resource, ViewGroup mainView) {
+			super(context, resource);
+			// TODO Auto-generated constructor stub
+			this.mainView = mainView; 
+		}
+
+		@Override
+		public void notifyDataSetInvalidated() {
+			// TODO Auto-generated method stub
+			mainView.removeAllViews();
+			for(int i=0; i<getCount(); i++){
+				mainView.addView(getView(i, null, null));
+			}
+			mainView.invalidate();
+		}
+	}
+	
 	private enum GetRequest{
 		GROUP_REQUEST, DELETE_GROUP_REQUEST;
 	}

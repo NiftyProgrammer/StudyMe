@@ -10,8 +10,8 @@
         android:id="@+id/profile_progress_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_centerInParent="true"
+        android:orientation="vertical"
         android:visibility="gone" >
 
         <ProgressBar
@@ -27,85 +27,90 @@
             android:layout_height="wrap_content"
             android:text="Sending data . . ."
             android:textAppearance="?android:attr/textAppearanceLarge" />
-
     </LinearLayout>
-    
-    <ScrollView
+
+    <LinearLayout
         android:id="@+id/profile_main_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true" >
+        android:layout_alignParentTop="true"
+        android:orientation="vertical" >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:orientation="vertical" >
 
-            <LinearLayout
+            <ImageView
+                android:id="@+id/profile_img"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="right"
+                android:background="@drawable/main_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:src="@drawable/group_img"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/profile_display_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" >
+                android:layout_margin="8dp"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/main_edit_text"
+                android:hint="Display Name (Optional)"
+                android:inputType="textPersonName|textCapWords"
+                android:padding="8dp"
+                android:textColor="@android:color/black" >
 
-                <ImageView
-                    android:id="@+id/profile_img"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:src="@drawable/group_img"
-                    android:layout_gravity="right"
-                    android:background="@drawable/main_selector"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:visibility="gone" />
+                <requestFocus />
+            </EditText>
 
-                <EditText
-                    android:id="@+id/profile_display_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="6dp"
-                    android:layout_marginTop="8dp"
-                    android:hint="Display Name (Optional)"
-                    android:inputType="textPersonName|textCapWords" >
-
-                    <requestFocus />
-                </EditText>
-
-                <EditText
-                    android:id="@+id/profile_email_address"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="6dp"
-                    android:layout_marginTop="4dp"
-                    android:hint="Email (Optional)"
-                    android:inputType="textEmailAddress" />
-
-                <EditText
-                    android:id="@+id/profile_desc"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="6dp"
-                    android:layout_marginTop="4dp"
-                    android:hint="Personal Description (Optional)"
-                    android:inputType="textMultiLine|textCapSentences"
-                    android:lines="4"
-                    android:singleLine="false" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/profile_send_btn"
-                android:layout_width="wrap_content"
+            <EditText
+                android:id="@+id/profile_email_address"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:drawableLeft="@drawable/abc_ic_cab_done_holo_light"
-                android:text="Save" />
+                android:layout_margin="8dp"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/main_edit_text"
+                android:hint="Email (Optional)"
+                android:inputType="textEmailAddress"
+                android:padding="8dp"
+                android:textColor="@android:color/black" />
+
+            <EditText
+                android:id="@+id/profile_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/main_edit_text"
+                android:hint="Personal Description (Optional)"
+                android:inputType="textMultiLine|textCapSentences"
+                android:lines="4"
+                android:padding="8dp"
+                android:singleLine="false"
+                android:textColor="@android:color/black" />
         </LinearLayout>
-    </ScrollView>
+
+        <Button
+            android:id="@+id/profile_send_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/main_selector"
+            android:text="Save" />
+    </LinearLayout>
 
 </RelativeLayout>

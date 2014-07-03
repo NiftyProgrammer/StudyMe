@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Me Study</string>
+    <string name="app_name">Let\'s Study</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="username_pref">com.rwth.i10.exercisegroups.username</string>
@@ -28,5 +28,6 @@
     <string name="title_activity_main_list">Me Study</string>
     <string name="title_activity_profile">Profile</string>
     <string name="title_activity_user">Users</string>
+    <string name="title_activity_stats">Statistics</string>
 
 </resources>

@@ -69,28 +69,35 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textStyle="italic" />
 
-        <ImageButton
+        <LinearLayout
             android:id="@+id/main_view_join_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_margin="8dp"
             android:background="@drawable/main_selector"
-            android:src="@drawable/add" />
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical" >
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/main_view_join_btn"
-            android:layout_below="@+id/main_view_join_btn"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:text="Join"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textStyle="italic" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@android:color/transparent"
+                android:clickable="false"
+                android:focusable="false"
+                android:src="@drawable/add" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Join"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textStyle="italic" />
+        </LinearLayout>
     </RelativeLayout>
 
     <ScrollView
@@ -111,7 +118,15 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginTop="13dp"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="Users"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textStyle="italic" />
 
             <LinearLayout
                 android:id="@+id/main_view_group_users"
@@ -120,6 +135,14 @@
                 android:layout_margin="8dp"
                 android:orientation="vertical" >
             </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="Messages"
+                android:textStyle="italic"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <LinearLayout
                 android:id="@+id/main_view_messages_list"

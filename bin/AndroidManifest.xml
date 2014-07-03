@@ -91,6 +91,10 @@
             android:name="com.rwth.i10.exercisegroups.Activitys.UserActivity"
             android:label="@string/title_activity_user" >
         </activity>
+        <activity
+            android:name="com.rwth.i10.exercisegroups.Activitys.StatsActivity"
+            android:label="@string/title_activity_stats" >
+        </activity>
     </application>
 
 </manifest>
