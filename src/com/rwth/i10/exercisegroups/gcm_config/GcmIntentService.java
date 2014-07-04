@@ -64,7 +64,7 @@ public class GcmIntentService extends IntentService {
 			} else if (GoogleCloudMessaging.
 					MESSAGE_TYPE_MESSAGE.equals(messageType)) {
 				// Post notification of received message.
-				
+
 
 				Log.i("Message", "Received: " + extras.toString());
 
@@ -76,23 +76,23 @@ public class GcmIntentService extends IntentService {
 				MessagesTypes type = MessagesTypes.convert(msgType);
 				String msg = extras.getString(MessageCategories.MESSAGE.toString());
 
-				//if(!isActivityRunning()){
-				sendNotification("Received: " + type.name() + "\nMessage: " + msg);
-				//return;
-		//	}
-				
+				if(!isActivityRunning()){
+					sendNotification(type.name(), msg);
+					return;
+				}
+
 				switch(type){
 
 				case RECEIVE_MESSAGE:
 				{
 					String []values = msg.split(Constants.KEY_SEPRATOR);
 
-					
+
 					if(values[0].equalsIgnoreCase("com.user.msg")){
 						ProfileData data = MainActivity.databaseSourse.getUserData(values[1]);
 						if(data.getStatus() == UserStatus.BLOCK_USER.ordinal())
 							return;
-						sendNotification( values[1] + ": " + values[2]);
+						sendNotification( values[1], values[2]);
 					}
 					else{
 						//group msg handling
@@ -124,7 +124,7 @@ public class GcmIntentService extends IntentService {
 					ProfileData profile = MainActivity.databaseSourse.getUserData(values[0]);
 					if(profile.getStatus() == UserStatus.BLOCK_USER.ordinal())
 						return;
-					
+
 					ProfileData data = new ProfileData();
 					data.setUsername(values[0]);
 					String group_id = values[1];
@@ -187,7 +187,7 @@ public class GcmIntentService extends IntentService {
 		return false;
 	}
 
-	private void sendNotification(String msg) {
+	private void sendNotification(String title, String msg) {
 		mNotificationManager = (NotificationManager)
 				this.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -197,7 +197,7 @@ public class GcmIntentService extends IntentService {
 		NotificationCompat.Builder mBuilder =
 				new NotificationCompat.Builder(this)
 		.setSmallIcon(R.drawable.ic_launcher)
-		.setContentTitle("GCM Notification")
+		.setContentTitle(title)
 		.setStyle(new NotificationCompat.BigTextStyle()
 		.bigText(msg))
 		.setContentText(msg);

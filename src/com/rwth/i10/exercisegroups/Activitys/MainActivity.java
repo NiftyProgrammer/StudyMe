@@ -954,7 +954,8 @@ LocationListener, View.OnClickListener{
 			((ImageButton)rootView.findViewById(R.id.left_drawer_filter_btn)).setOnClickListener(mainInstance);
 			((TextView)rootView.findViewById(R.id.left_drawer_logout)).setOnClickListener(mainInstance);
 			((LinearLayout)rootView.findViewById(R.id.left_drawer_users_layout)).setOnClickListener(mainInstance);
-
+			//((TextView)rootView.findViewById(R.id.left_drawer_stats)).setOnClickListener(mainInstance);
+			
 			slidingPanel.collapsePanel();
 			slidingPanel.setPanelHeight(0);
 			//slidingPanel.hidePanel();
@@ -1132,7 +1133,14 @@ LocationListener, View.OnClickListener{
 			startActivity(new Intent(context, UserActivity.class));
 			break;
 		}
-
+		
+		/*case R.id.left_drawer_stats:
+		{
+			mDrawerLayout.closeDrawer(LeftDrawer);
+			startActivity(new Intent(context, StatsActivity.class));
+			break;
+		}
+*/
 		}
 	}
 
