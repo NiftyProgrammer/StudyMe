@@ -37,6 +37,10 @@ import de.contextdata.Entity;
 import de.contextdata.Event;
 import de.contextdata.RandomString;
 
+
+/**
+ * Adapter for main view groups diplay
+ * */
 public class MainListViewAdapter extends BaseAdapter {
 
 	private ArrayList<GroupData> groupsList;
@@ -163,6 +167,10 @@ public class MainListViewAdapter extends BaseAdapter {
 		else
 			((ImageView)rootView.findViewById(R.id.adapter_group_list_img)).setBackgroundDrawable(new BitmapDrawable(context.getResources(), data.getImage()));
 
+		
+		/*
+		 * Handle group delete button 
+		 * **/
 		((ImageButton)rootView.findViewById(R.id.adapter_group_list_del_btn)).setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -184,6 +192,9 @@ public class MainListViewAdapter extends BaseAdapter {
 		TextView statusView = (TextView)rootView.findViewById(R.id.adapter_group_list_status);
 		setStatus(INACTIVE, statusView);
 		
+		/*
+		 * Handle group status change button
+		 * **/
 		LinearLayout status_btn = (LinearLayout)rootView.findViewById(R.id.adapter_group_list_status_btn);
 		if(runningGroup == null && !TextUtils.isEmpty(data.getGroupSession()) && 
 				!TextUtils.isEmpty(data.getStatus()) && data.getStatus().equalsIgnoreCase("START")){
@@ -245,6 +256,10 @@ public class MainListViewAdapter extends BaseAdapter {
 		return rootView;
 	}
 
+	
+	/**
+	 * Change group status and its color with respect to it
+	 * */
 	private void setStatus(String status, TextView view){
 		if(status.equalsIgnoreCase(INACTIVE))
 			view.setTextColor(Color.parseColor("#FF6969"));
@@ -253,6 +268,10 @@ public class MainListViewAdapter extends BaseAdapter {
 		view.setText(status);
 	}
 	
+	
+	/**
+	 * Send group data to server as an event
+	 * */
 	public static void sendGroupData(GroupData data){
 		MyContextData mContextData = ServerHandler.createInstance(
 				context.getString(R.string.server_username), 

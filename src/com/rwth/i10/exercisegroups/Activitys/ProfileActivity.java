@@ -31,6 +31,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -39,19 +40,56 @@ import android.widget.Toast;
 public class ProfileActivity extends ActionBarActivity implements OnClickListener{
 
 	private Context _context = null;
+	
+	/**
+	 * Used to store user profile data in memory and then store it in preference over previous data
+	 * */
 	private ProfileData _newData;
 	private ProfileHandler _mProfileHandler;
-	private Bitmap _imageDrawable = null;
 
+	/**
+	 * Activity callback ids for camera and gallery
+	 * */
 	private static final int CAMERA_REQUEST = 1888; 
 	private static final int GALLERY_REQUEST = 1999;
 
-	private MyAsyncTask sendTask;
-	private TextView _displayName, _email, _description;
-	private View _progressLayout;
-	private ViewGroup _mainView;
+	/**
+	 * To store image after loading image from one of the above techniques
+	 * */
+	private Bitmap _imageDrawable;
+
+	/**
+	 * Display imageview on user interface, (its not used in UI)*/
 	private ImageView _imgView;
+	
+	/**
+	 * Async background sending of data and finishing activity if no error occured
+	 * */
+	private MyAsyncTask sendTask;
+	
+	/**
+	 * 3 EditText views used in UI
+	 * */
+	private EditText _displayName, _email, _description;
+	
+	/**
+	 * Progress layout panal to show or hide its visibility
+	 * */
+	private View _progressLayout;
+	
+	/**
+	 * Main edit layout for user input and to handle its visibility according with progressLayout
+	 * */
+	private ViewGroup _mainView;
+		
+	/**
+	 * Store user preferences localy
+	 * */
 	private ManagePreferences pref;
+	
+	/**
+	 * Flag to track if data is send
+	 * */
 	private boolean sendData;
 
 	@Override
@@ -70,6 +108,9 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == android.R.id.home) {
+			/**
+			 * If send task is running then cancel it and finish activity
+			 * */
 			if(sendTask != null && sendTask.getStatus() == Status.RUNNING){
 				sendTask.cancel(false);
 				sendTask = null;
@@ -92,6 +133,9 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 			_mainView.setVisibility(View.GONE);
 			_newData = _mProfileHandler.getProfileData();
 
+			/**
+			 * Check each edit text if its changed
+			 * */
 			sendData = false;
 			if( !TextUtils.isEmpty( _displayName.getText() ) && !_displayName.getText().toString().equalsIgnoreCase(_newData.getDisplayName()) ){
 				sendData = true;
@@ -152,6 +196,10 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 
 	}
 
+	
+	/**
+	 * On receive data from activity for image, this method is called
+	 * */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub
@@ -193,9 +241,9 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 
 		_context = this;
 
-		_displayName = (TextView)findViewById(R.id.profile_display_name);
-		_description = (TextView)findViewById(R.id.profile_desc);
-		_email = (TextView)findViewById(R.id.profile_email_address);
+		_displayName = (EditText)findViewById(R.id.profile_display_name);
+		_description = (EditText)findViewById(R.id.profile_desc);
+		_email = (EditText)findViewById(R.id.profile_email_address);
 		_mainView = (ViewGroup)findViewById(R.id.profile_main_view);
 		_progressLayout = findViewById(R.id.profile_progress_layout);
 		_imgView = (ImageView) findViewById(R.id.profile_img);
@@ -223,6 +271,9 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 		getSupportActionBar().setHomeButtonEnabled(true);
 	}
 
+	/**
+	 * Keep progress view visible and work in background
+	 * */
 	private class MyAsyncTask extends AsyncTask<Void, String, Boolean>{
 
 		@Override

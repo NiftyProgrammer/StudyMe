@@ -19,17 +19,46 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
+
+/**
+ * 
+ * Use to store, update or delete user profile from server.
+ * 
+ * */
+
 public class ProfileHandler implements MyContextData.Listener{
 
 	private MyContextData contextData;
 	private Context context;
 	
 	private ProfileData profileData;
-	private String error;
 	
+
+	/**
+	 * Flag to store error message, if any occured
+	 * */
+	private String error;
+
+	/**
+	 * Flag use to delete profile after upload (not used anymore)
+	 * */
 	private boolean deleteAfterwords;
+	
+
+	/**
+	 * Flag use to upload profile after delete (not used anymore)
+	 * */
 	private boolean uploadProfile;
+
+	/**
+	 * Flag used to tell when new profile is uploaded and previous profile is deleted
+	 * */
 	private boolean processFinished;
+	
+
+	/**
+	 * Flag use for new profile is uploaded, so have to get that profile data to get profile id for delete it
+	 * */
 	private boolean updatedId;
 		
 	private int totalPosts;
@@ -59,6 +88,9 @@ public class ProfileHandler implements MyContextData.Listener{
 		this.contextData.setTimeout(60000 * 2);
 	}
 		
+	/**
+	 * On previous profile data get
+	 * */
 	@Override
 	public void onGETResult(String result) {
 		// TODO Auto-generated method stub
@@ -141,6 +173,10 @@ public class ProfileHandler implements MyContextData.Listener{
 			error = e.getMessage();
 		}
 	}
+	
+	/**
+	 * Om new profile uploaded or previous profile deleted
+	 * */
 	@Override
 	public void onPOSTResult(String result) {
 		// TODO Auto-generated method stub
@@ -169,6 +205,7 @@ public class ProfileHandler implements MyContextData.Listener{
 	public boolean getProcessFinished(){
 		return processFinished;
 	}
+	
 	public String getError(){
 		return error;
 	}
@@ -179,9 +216,11 @@ public class ProfileHandler implements MyContextData.Listener{
 	public void setUpdatedId(boolean isUploaded){
 		updatedId = false;
 	}
+	
 	public void setDeleteProfile(){
 		deleteAfterwords = true;
 	}
+	
 	public boolean getUploadedId(){
 		return this.updatedId;
 	}

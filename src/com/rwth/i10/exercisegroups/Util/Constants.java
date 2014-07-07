@@ -1,5 +1,11 @@
 package com.rwth.i10.exercisegroups.Util;
 
+
+/**
+ * 
+ * Class to store static Constants used in other classes
+ * 
+ * */
 public class Constants {
 
 	public static final String PROPERTY_REG_ID = "registration_id";

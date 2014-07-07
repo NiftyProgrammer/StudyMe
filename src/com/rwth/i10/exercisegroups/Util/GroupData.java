@@ -5,6 +5,12 @@ import java.util.List;
 
 import android.graphics.Bitmap;
 
+/**
+ * 
+ * User to store group all data
+ * 
+ * */
+
 public class GroupData {
 
 	private String name, course, address, status, description, groupSession, groupId;

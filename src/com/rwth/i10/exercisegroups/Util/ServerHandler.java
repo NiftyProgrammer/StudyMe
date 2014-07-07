@@ -2,6 +2,12 @@ package com.rwth.i10.exercisegroups.Util;
 
 import de.contextdata.ContextData;
 
+
+/**
+ * 
+ * Singleton class use to create 'MyContext' object with once entered api key, version etc
+ * 
+ * */
 public class ServerHandler {
 
 	private static MyContextData contextData;

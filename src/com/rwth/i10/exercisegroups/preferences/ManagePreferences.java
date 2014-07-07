@@ -15,6 +15,13 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+
+/**
+ * 
+ * Store preferences in shared preferences in encoded formate
+ * 
+ * */
+
 public class ManagePreferences {
 
 	private Context context;
@@ -23,7 +30,9 @@ public class ManagePreferences {
 		this.context = context;
 	}
 	
-	
+	/**
+	 * Save encoded single preference with key and value
+	 * */
 	public boolean savePreferences(String key, String value){
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 		SimpleCrypto crypto = new SimpleCrypto();
@@ -33,6 +42,9 @@ public class ManagePreferences {
 		return editor.commit();
 	}
 	
+	/**
+	 * Get encoded single preference value with respect to its key else return default value
+	 * */
 	public String getPreference(String key, String defaultValue){
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 		SimpleCrypto crypto = new SimpleCrypto();
@@ -43,12 +55,15 @@ public class ManagePreferences {
 			return crypto.fromHex(value);
 	}
 		
+	
+	/**
+	 * Store preferences without encoding it
+	 * */
 	public boolean putStringPreferences(String key, String value){
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 		editor.putString(key, value);		
 		return editor.commit();
-	}
-	
+	}	
 	public boolean putIntPreferences(String key, int value){
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();		
 		editor.putInt(key, value);		
@@ -60,6 +75,9 @@ public class ManagePreferences {
 		return editor.commit();
 	}
 	
+	/**
+	 * Removing preference from shared preferences
+	 * */
 	public boolean removePreferences(String key){
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();		
 		editor.remove(key);		
@@ -72,6 +90,10 @@ public class ManagePreferences {
 		return editor.commit();
 	}
 	
+	
+	/**
+	 * Get un-encrypted preference
+	 * */
 	public String getStringPreferences(String key, String defaultValue){
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 		return pref.getString(key, defaultValue);
@@ -86,6 +108,10 @@ public class ManagePreferences {
 	}
 		
 		
+	
+	/**
+	 * Crypto grphic class to make encryoted data
+	 * */
 	private class SimpleCrypto {
 
 		public String encrypt(String seed, String cleartext) {

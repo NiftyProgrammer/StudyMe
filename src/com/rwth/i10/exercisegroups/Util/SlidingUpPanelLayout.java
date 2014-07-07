@@ -26,6 +26,12 @@ import android.view.accessibility.AccessibilityEvent;
 import com.nineoldandroids.view.animation.AnimatorProxy;
 import com.rwth.i10.exercisegroups.R;
 
+
+/**
+ * 
+ * View to create sliding up panel
+ * 
+ * */
 public class SlidingUpPanelLayout extends ViewGroup {
 
     private static final String TAG = SlidingUpPanelLayout.class.getSimpleName();

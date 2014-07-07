@@ -28,6 +28,12 @@ import android.os.AsyncTask;
 import android.util.Log;
 import de.contextdata.RandomString;
 
+
+/**
+ * 
+ * Updated form of 'ContextData' class with addition of timeout parameter
+ * 
+ * */
 public class MyContextData {
 
 

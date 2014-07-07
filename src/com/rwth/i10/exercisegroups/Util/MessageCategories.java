@@ -1,5 +1,11 @@
 package com.rwth.i10.exercisegroups.Util;
 
+
+/**
+ * 
+ * Use to distingush message categories in a single message
+ * 
+ * */
 public enum MessageCategories {
 
 	MESSAGE, TYPE, ACTION;

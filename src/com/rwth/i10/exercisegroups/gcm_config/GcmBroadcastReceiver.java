@@ -6,6 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
+
+/**
+ * 
+ * Receive GCM message from other user and call service in application
+ * 
+ * */
 public class GcmBroadcastReceiver extends WakefulBroadcastReceiver {
 
 	public static String GCMBroadcastReceiverAction = "com.google.android.c2dm.intent.RECEIVE";

@@ -1,5 +1,11 @@
 package com.rwth.i10.exercisegroups.Util;
 
+
+/**
+ * 
+ * Distinguish Between different messages
+ * 
+ * */
 public enum MessagesTypes {
 
 	UPDATE_GROUPS, RECEIVE_MESSAGE, GROUP_JOIN_REQUEST, GROUP_ACCEPT_ACK, GROUP_DISBAND_ACK, NEW_USER_JOINED;

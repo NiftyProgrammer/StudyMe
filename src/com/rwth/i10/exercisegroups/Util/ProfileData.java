@@ -1,5 +1,11 @@
 package com.rwth.i10.exercisegroups.Util;
 
+
+/**
+ * 
+ * Single user profile data
+ * 
+ * */
 public class ProfileData {
 
 	

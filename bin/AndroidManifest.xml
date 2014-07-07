@@ -79,10 +79,6 @@
             android:label="@string/title_activity_create_group" >
         </activity>
         <activity
-            android:name="com.rwth.i10.exercisegroups.Activitys.MainListActivity"
-            android:label="@string/title_activity_main_list" >
-        </activity>
-        <activity
             android:name="com.rwth.i10.exercisegroups.Activitys.ProfileActivity"
             android:label="@string/title_activity_profile"
             android:windowSoftInputMode="adjustResize|stateVisible" >

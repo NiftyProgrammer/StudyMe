@@ -30,10 +30,20 @@ import android.preference.PreferenceManager;
 import android.text.format.DateFormat;
 import android.util.Log;
 
+/**
+ * 
+ * Static methods used in most of classes
+ * 
+ * */
+
 public class StaticUtilMethods {
 
 	public static final int TWO_MINUTES = 1000 * 60 * 2;
 
+	
+	/**
+	 * Create json to fetch group data from server
+	 * */
 	public static String createFetchServerJSON(){
 		JSONObject json = new JSONObject();
 		try {
@@ -58,6 +68,9 @@ public class StaticUtilMethods {
 		return json.toString();
 	}
 
+	/**
+	 * Get the address string from location provided
+	 * */
 	public static Address getAddressForLocation(Context context, Location location){
 		Geocoder geocoder;
 		List<Address> addresses = null;
@@ -77,6 +90,9 @@ public class StaticUtilMethods {
 			return null;
 	}
 
+	/**
+	 * Check if network is available
+	 * */
 	public static boolean isNetworkAvailable(Context context) {
 		ConnectivityManager connectivityManager 
 		= (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -84,6 +100,9 @@ public class StaticUtilMethods {
 		return activeNetworkInfo != null && activeNetworkInfo.isConnected();
 	}
 
+	/**
+	 * Check if new location is better then previous location
+	 * */
 	public static boolean isBetterLocation(Location location, Location currentBestLocation) {
 
 		if(location == null && currentBestLocation == null)
@@ -147,6 +166,9 @@ public class StaticUtilMethods {
 		return pref.getPreference(Constants.PROPERTY_PROFILE_SESSION, RandomString.randomString(20));
 	}
 
+	/**
+	 * Get user credentials from preferences
+	 * */
 	public static String[] getUserCredentials(Context context){
 		String []credentials = new String[2];
 		ManagePreferences pref = new ManagePreferences(context);
@@ -155,16 +177,26 @@ public class StaticUtilMethods {
 		return credentials;
 	}
 
+	/**
+	 * User Gson to convert event to string
+	 * */
 	public static String eventToString(Event obj){
 		Gson g = new Gson();
 		String json = "[" + g.toJson(obj) + "]";
 		return json;
 	}
 
+	
+	/**
+	 * Use to create timestamp from Calender (not used)
+	 * */
 	public static int timestamp(){
 		return (int)Calendar.getInstance().getTime().getTime();
 	}
 
+	/**
+	 * Convert timestamp to date format
+	 * */
 	public static String getDate(long time) {
 		Calendar cal = Calendar.getInstance(Locale.ENGLISH);
 		cal.setTimeInMillis(time);
@@ -172,6 +204,9 @@ public class StaticUtilMethods {
 		return date;
 	}
 
+	/**
+	 * Convert image bitmap into rounded bitmap
+	 * */
 	public static Bitmap getRoundedShape(Bitmap scaleBitmapImage) {
 		// TODO Auto-generated method stub
 		int targetWidth = 50;

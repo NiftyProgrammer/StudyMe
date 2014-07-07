@@ -19,18 +19,42 @@ import com.rwth.i10.exercisegroups.Util.GroupData;
 import com.rwth.i10.exercisegroups.Util.ProfileData;
 import com.rwth.i10.exercisegroups.Util.UserStatus;
 
+
+/**
+ * Database handler class to insert, delete, update records in Sqlite database
+ * 
+ * */
 public class GroupsDataSource {
 
+	/**
+	 * Database helper to create, update or get read/write reference
+	 * */
 	private SQLiteHelper dbHelper;
+	
+	/**
+	 * Database read and write references
+	 * */
 	private SQLiteDatabase writeDatabase, readDatabase;
+	
+	/**
+	 * All columns in Group table
+	 * */
 	private String[] allColumns = {SQLiteHelper.TABLE_ID, SQLiteHelper.TABLE_SESSION, SQLiteHelper.TABLE_AVTIVITY,
 			SQLiteHelper.TABLE_COURSE, SQLiteHelper.TABLE_ADDRESS, SQLiteHelper.TABLE_STATUS, SQLiteHelper.TABLE_DESCRIPTION,
 			SQLiteHelper.TABLE_MAX_PART, SQLiteHelper.TABLE_LAT, SQLiteHelper.TABLE_LNG,
 			SQLiteHelper.TABLE_IMAGE};
 	
+	
+	/**
+	 * All columns in User table
+	 * */
 	private String[] userAllColumns = { SQLiteHelper.UTABLE_NAME, SQLiteHelper.UTABLE_MSGID, 
 			SQLiteHelper.UTABLE_GROUPID, SQLiteHelper.UTABLE_STATUS};
 	
+	
+	/**
+	 * All columns in Group msg table
+	 * */
 	private String[] groupMsgAllColumns = { SQLiteHelper.GROUP_MSG_ID, SQLiteHelper.GROUP_MSG_MSGs };
 	
 	public GroupsDataSource(Context context) {
@@ -38,6 +62,9 @@ public class GroupsDataSource {
 		dbHelper = new SQLiteHelper(context);
 	}
 	
+	/**
+	 * Open read and write databases
+	 * */
 	public void open() throws SQLException{
 		writeDatabase = dbHelper.getWritableDatabase();
 		readDatabase = dbHelper.getReadableDatabase();

@@ -22,11 +22,23 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+
+/**
+ * 
+ * Server class to send message to other device(s)
+ * 
+ * */
+
 public class GcmServer {
 
 	private Context context;
 	private int status;
 
+	
+	/**
+	 * This method is used from other classes to send message with msg parameter (like message itself),
+	 * user ids which will receive this message and message type
+	 * */
 	public void sendMessage(final Map<String, String> msgParams,
 			final List<String> regIds, final MessagesTypes type,
 			Context context){
@@ -50,7 +62,10 @@ public class GcmServer {
 		}.execute();
 	}
 
-
+	
+	/**
+	 * Creates html header and body to send message to device(s) 
+	 * */
 	private void post(Map<String, String> msgParams, List<String> regIds, MessagesTypes type)
 			throws IOException{
 		// TODO Auto-generated method stub
@@ -83,6 +98,9 @@ public class GcmServer {
 		}
 		body += "&restricted_package_name=com.rwth.i10.exercisegroups";
 
+		/**
+		 * If 'collapse' parameter is set, then on receiver end if it receive more then one message if this collapse type then only one will be handled
+		 * */
 		if(type == MessagesTypes.UPDATE_GROUPS)
 			body += "&collapse_key=1";
 		if(type == MessagesTypes.NEW_USER_JOINED)

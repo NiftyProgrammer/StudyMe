@@ -30,19 +30,29 @@ import com.rwth.i10.exercisegroups.preferences.ManagePreferences;
 import de.contextdata.ContextData;
 
 public class RegisterActivity extends ActionBarActivity {
+	
+	/**
+	 * Strings to store each of user entered data
+	 * */
 	private String mUsername;
 	private String mPassword;
 	private String mEmail;
 
-	// UI references.
+	/**
+	 * UI references
+	 * */
 	private EditText mUsernameView;
 	private EditText mPasswordView;
 	private EditText mEmailView;
+	
+	/**
+	 * Handling user edit view and progress view to change visibility with respect to each other*/
 	private View mRegisterFormView;
 	private View mRegisterStatusView;
 	private TextView mRegisterStatusMessageView;
 
 	private Context context;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -121,6 +131,10 @@ public class RegisterActivity extends ActionBarActivity {
 				});
 	}
 
+	/**
+	 * When user click register button method is called
+	 * Trys to first check if any required value is missing and then send data to server
+	 * */
 	private void attemptRegister(){
 		mUsernameView.setError(null);
 		mPasswordView.setError(null);
@@ -210,6 +224,8 @@ public class RegisterActivity extends ActionBarActivity {
 					}
 				}
 			});
+			
+			//sending data to server
 			JSONObject data = new JSONObject();
 			try {
 				data.put("name", mUsername);
@@ -219,13 +235,12 @@ public class RegisterActivity extends ActionBarActivity {
 			}
 			contextData.post("user/new", data.toString());
 
-
-			/*mAuthTask = new UserLoginTask();
-					mAuthTask.execute((Void) null);*/
 		}
 	}
 
-	//registering new user
+	/**
+	 * if a new user want to login with same credentials
+	 * */
 	private void requestToLogin(){
 		AlertDialog dialog = new AlertDialog.Builder(this)
 		.setTitle("Registration Completed.")
@@ -256,6 +271,9 @@ public class RegisterActivity extends ActionBarActivity {
 		dialog.show();
 	}
 
+	/**
+	 * Saving credentials in preferences in crypted format
+	 * */
 	private void saveCredentials(){
 		ManagePreferences managePreferences = new ManagePreferences(this);
 		managePreferences.savePreferences(getString(R.string.username_pref), mUsername);
@@ -263,7 +281,7 @@ public class RegisterActivity extends ActionBarActivity {
 	}
 
 	/**
-	 * Shows the progress UI and hides the login form.
+	 * Shows the progress UI and hides the login form or vise-versa.
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
 	private void showProgress(final boolean show) {

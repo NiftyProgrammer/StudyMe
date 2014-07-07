@@ -24,6 +24,13 @@ import com.rwth.i10.exercisegroups.Util.MessagesTypes;
 import com.rwth.i10.exercisegroups.Util.ProfileData;
 import com.rwth.i10.exercisegroups.Util.UserStatus;
 
+
+/**
+ * 
+ * Service to handle received message from other user(s) called by 'GCMBroadcastReceiver' class
+ * 
+ * */
+
 public class GcmIntentService extends IntentService {
 
 	public static final int NOTIFICATION_ID = 1;
@@ -76,11 +83,19 @@ public class GcmIntentService extends IntentService {
 				MessagesTypes type = MessagesTypes.convert(msgType);
 				String msg = extras.getString(MessageCategories.MESSAGE.toString());
 
+				
+				/*
+				 * If acitivty is closed and message is received then notification is showen
+				 * **/
 				if(!isActivityRunning()){
 					sendNotification(type.name(), msg);
 					return;
 				}
 
+				
+				/*
+				 * Handle message received with respect to its type
+				 * **/
 				switch(type){
 
 				case RECEIVE_MESSAGE:
@@ -175,6 +190,9 @@ public class GcmIntentService extends IntentService {
 		GcmBroadcastReceiver.completeWakefulIntent(intent);
 	}
 
+	/**
+	 * Check if activity is running
+	 * */
 	private boolean isActivityRunning(){
 		ActivityManager activityManager = (ActivityManager) this.getSystemService( ACTIVITY_SERVICE );
 		List<RunningAppProcessInfo> procInfos = activityManager.getRunningAppProcesses();
@@ -187,6 +205,10 @@ public class GcmIntentService extends IntentService {
 		return false;
 	}
 
+	
+	/**
+	 * puts notification on device
+	 * */
 	private void sendNotification(String title, String msg) {
 		mNotificationManager = (NotificationManager)
 				this.getSystemService(Context.NOTIFICATION_SERVICE);

@@ -4,8 +4,18 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+/**
+ * 
+ * Sqlite Database Helper class to create, update or get database references 
+ * 
+ * */
+
 public class SQLiteHelper extends SQLiteOpenHelper {
 
+	/**
+	 * 'Group'
+	 * table to store created groups data.
+	 * */
 	public static final String 	TABLE_CREATE = "Groups",
 								TABLE_ID = "id",
 								TABLE_SESSION = "session",
@@ -19,19 +29,35 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 								TABLE_LNG = "lng",
 								TABLE_IMAGE = "image";
 	
+	/**
+	 * 'User'
+	 * table to store user requests and there status, also blocked users are also stored in it
+	 * */
 	public static final String UTABLE_CREATE = "Users",
 								UTABLE_NAME = "user_name",
 								UTABLE_MSGID = "msg_id",
 								UTABLE_GROUPID = "group_id",
 								UTABLE_STATUS = "status";
 	
+	/**
+	 * 'GroupMsgs'
+	 * table to store group msgs and not storing on server
+	 * */
 	public static final String GROUP_MSG_TABLE = "GroupMsgs",
 								GROUP_MSG_ID = "id",
 								GROUP_MSG_MSGs = "msgs";
 	
+	/**
+	 * Database file name and its version
+	 * */
 	public static final String DATABASE_NAME = "groups.db";
 	private static final int DATABASE_VERSION = 3;
 	
+	
+	/**
+	 * Create commands for each of table
+	 * 
+	 * */
 	private static final String DATABASE_CREATE = "create table "
 			+ TABLE_CREATE + "(" + TABLE_ID + " text primary key, "
 			+ TABLE_SESSION + " text, "
